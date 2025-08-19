@@ -58,6 +58,13 @@ button:hover,.btn:hover { background:var(--accent); color:#fff; border-color:var
 .dark .hl .tok-bool { color:#34d399; }
 .hl .tok-null { color:#6366f1; font-style:italic; }
 .hl .tok-sym { color:#64748b; }
+/* new config grid styles */
+.config-grid { display:grid; gap:1.6rem; margin:1.4rem 0 2.2rem; }
+@media (min-width:900px){ .config-grid { grid-template-columns:1fr 1fr; align-items:start; } }
+.config-card { background:var(--code-bg); border:1px solid var(--border); padding:1rem 1.1rem 1.3rem; border-radius:var(--radius); box-shadow:0 2px 4px -2px rgba(0,0,0,.25); }
+.dark .config-card { box-shadow:0 2px 4px -2px rgba(0,0,0,.6); }
+.config-card h3 { margin-top:0; }
+.config-card pre { margin:0.75rem 0 0; }
 </style>
 <script>
 const toggleTheme = () => { const root=document.documentElement; if(root.classList.contains('dark')){ root.classList.remove('dark'); localStorage.setItem('prefers-dark','0'); } else { root.classList.add('dark'); localStorage.setItem('prefers-dark','1'); }};
@@ -105,37 +112,26 @@ function highlightJSONLike(src){ try { const obj=JSON.parse(src); let json=JSON.
       <li><strong>Zed / JetBrains (plugins)</strong> – emerging MCP adopters.</li>
       <li><strong>Custom</strong> – use <code>mcp-remote</code> CLI or direct HTTP POST.</li>
     </ul>
-    <h3>Jan (Desktop)</h3>
-    <p class="small">Add to your Jan MCP providers configuration:</p>
-    <pre><code>{
-  "name": "meilisearch",
-  "transport": "http",
-  "command": "npx",
-  "args": [
-    "-y","mcp-remote@latest","https://meilisearch.javad.dev/mcp",
-    "--header","X-Meili-Instance: ${MEILISEARCH_INSTANCE}",
-    "--header","X-Meili-APIKey: ${MEILISEARCH_API_KEY}"
-  ],
-  "env": {
-    "MEILISEARCH_INSTANCE": "http://localhost:7700",
-    "MEILISEARCH_API_KEY": "masterKey"
-  },
-  "active": true
-}</code></pre>
-    <h3>Generic HTTP (mcp-remote)</h3>
-    <pre><code>{
+    <div class="config-grid">
+      <div class="config-card">
+        <h3 style="margin-top:0;">Generic HTTP (mcp-remote)</h3>
+        <pre><code>{
   "command": "npx",
   "args": ["-y","mcp-remote@latest","https://meilisearch.javad.dev/mcp", "--header","X-Meili-Instance: ${MEILISEARCH_INSTANCE}", "--header","X-Meili-APIKey: ${MEILISEARCH_API_KEY}"],
   "env": {"MEILISEARCH_INSTANCE": "http://localhost:7700", "MEILISEARCH_API_KEY": "masterKey"},
   "active": true
 }</code></pre>
-    <h3>Local STDIO</h3>
-    <pre><code>{
+      </div>
+      <div class="config-card">
+        <h3 style="margin-top:0;">Local STDIO</h3>
+        <pre><code>{
   "command": "/usr/bin/meilisearch-mcp",
   "args": ["serve","--meili-host","http://localhost:7700","--meili-api-key","masterKey"],
   "env": {},
   "active": false
 }</code></pre>
+      </div>
+    </div>
     <p class="small">Flip <code>active</code> flags to select transport. Prefer stdio locally; HTTP for remote/container usage.</p>
   </section>
   <section>
