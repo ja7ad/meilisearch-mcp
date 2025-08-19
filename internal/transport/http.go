@@ -2,28 +2,63 @@ package transport
 
 import (
 	"context"
+	_ "embed"
+	"html/template"
+	"net/http"
 
 	"github.com/ja7ad/meilisearch-mcp/internal/logger"
+	"github.com/ja7ad/meilisearch-mcp/version"
 	"github.com/mark3labs/mcp-go/server"
 )
 
+//go:embed index.tpl
+var indexTpl string
+
+var indexTemplate = template.Must(template.New("index").Parse(indexTpl))
+
 type HTTP struct {
 	addr    string
-	srv     *server.StreamableHTTPServer
+	mcp     http.Handler
+	httpSrv *http.Server
 	errCh   chan error
 	logging *logger.SubLogger
 }
 
 func NewHTTP(mc *server.MCPServer, addr string) Server {
-	srv := &HTTP{
-		srv:   server.NewStreamableHTTPServer(mc),
-		errCh: make(chan error),
-		addr:  addr,
+	mcpHandler := server.NewStreamableHTTPServer(mc)
+
+	mux := http.NewServeMux()
+	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path == "/" {
+			w.Header().Set("Content-Type", "text/html; charset=utf-8")
+			if r.Method == http.MethodHead {
+				// For HEAD just send headers (fast liveness / latency check)
+				return
+			}
+			data := struct{ Version string }{Version: version.Version.String()}
+			if err := indexTemplate.Execute(w, data); err != nil {
+				w.WriteHeader(http.StatusInternalServerError)
+				_, _ = w.Write([]byte("template render error"))
+			}
+			return
+		}
+		mcpHandler.ServeHTTP(w, r)
+	})
+
+	httpSrv := &http.Server{
+		Addr:    addr,
+		Handler: mux,
 	}
 
-	srv.logging = logger.NewSubLogger("_transport", srv)
+	s := &HTTP{
+		addr:    addr,
+		mcp:     mcpHandler,
+		httpSrv: httpSrv,
+		errCh:   make(chan error, 1),
+	}
 
-	return srv
+	s.logging = logger.NewSubLogger("_transport", s)
+	return s
 }
 
 func (*HTTP) String() string {
@@ -33,7 +68,7 @@ func (*HTTP) String() string {
 func (h *HTTP) Start(_ context.Context) {
 	go func() {
 		h.logging.Info("Starting http server", "addr", h.addr)
-		h.errCh <- h.srv.Start(h.addr)
+		h.errCh <- h.httpSrv.ListenAndServe()
 	}()
 }
 
@@ -42,5 +77,5 @@ func (h *HTTP) Err() <-chan error {
 }
 
 func (h *HTTP) Stop(ctx context.Context) error {
-	return h.srv.Shutdown(ctx)
+	return h.httpSrv.Shutdown(ctx)
 }
