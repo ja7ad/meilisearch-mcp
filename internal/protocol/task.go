@@ -2,9 +2,9 @@ package protocol
 
 import (
 	"context"
-	"fmt"
 	"strconv"
 
+	"github.com/bytedance/sonic"
 	"github.com/mark3labs/mcp-go/mcp"
 	"github.com/mark3labs/mcp-go/server"
 )
@@ -39,9 +39,11 @@ func (p *Protocol) GetTask() (mcp.Tool, server.ToolHandlerFunc) {
 				return nil, err
 			}
 
-			return mcp.NewToolResultStructured(
-				task,
-				fmt.Sprintf("task with ID %d retrieved, status: %s", taskUID, task.Status),
-			), nil
+			b, err := sonic.Marshal(task)
+			if err != nil {
+				return nil, err
+			}
+
+			return mcp.NewToolResultText(string(b)), nil
 		}
 }

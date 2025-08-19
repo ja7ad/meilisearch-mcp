@@ -24,6 +24,7 @@ func (r *Route) Register() {
 
 func (r *Route) registerIndexRoute() {
 	r.mc.AddTool(r.proto.CreateIndex())
+	r.mc.AddTool(r.proto.GetIndex())
 }
 
 func (r *Route) registerTaskRoute() {
