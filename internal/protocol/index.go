@@ -96,3 +96,49 @@ func (p *Protocol) GetIndex() (tool mcp.Tool, handler server.ToolHandlerFunc) {
 			return mcp.NewToolResultText(string(b)), nil
 		}
 }
+
+func (p *Protocol) ListIndex() (tool mcp.Tool, handler server.ToolHandlerFunc) {
+	return mcp.NewTool(
+			"list_indexes",
+			mcp.WithDescription("List all indexes in Meilisearch"),
+			WithPagination(),
+		), func(ctx context.Context, req mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+			limit, err := OptionalInt64Param(req, "limit")
+			if err != nil {
+				return mcp.NewToolResultError(err.Error()), nil
+			}
+
+			offset, err := OptionalInt64Param(req, "offset")
+			if err != nil {
+				return mcp.NewToolResultError(err.Error()), nil
+			}
+
+			client, err := p.client(req.Header)
+			if err != nil {
+				return mcp.NewToolResultError(err.Error()), nil
+			}
+
+			if limit <= 0 {
+				limit = 20 // Default limit if not specified
+			}
+
+			if offset <= 0 {
+				offset = 0 // Default offset if not specified
+			}
+
+			res, err := client.ListIndexes(&meilisearch.IndexesQuery{
+				Limit:  limit,
+				Offset: offset,
+			})
+			if err != nil {
+				return mcp.NewToolResultError(err.Error()), nil
+			}
+
+			b, err := sonic.Marshal(res)
+			if err != nil {
+				return nil, err
+			}
+
+			return mcp.NewToolResultText(string(b)), nil
+		}
+}
