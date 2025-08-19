@@ -37,6 +37,9 @@ func (r *Route) registerIndexRoute() {
 
 	tool, handler = r.proto.GetIndex()
 	r.mc.AddTool(tool, r.apply(handler, r.middlewares...))
+
+	tool, handler = r.proto.ListIndex()
+	r.mc.AddTool(tool, r.apply(handler, r.middlewares...))
 }
 
 func (r *Route) registerTaskRoute() {
