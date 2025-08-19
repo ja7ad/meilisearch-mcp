@@ -2,19 +2,9 @@ package protocol
 
 import (
 	"fmt"
-	"net/http"
 
-	"github.com/ja7ad/meilisearch-mcp/internal/util"
 	"github.com/mark3labs/mcp-go/mcp"
 )
-
-func headers(header http.Header) (host, apiKey, hash string) {
-	host = header.Get("X-Meili-Instance")
-	apiKey = header.Get("X-Meili-APIKey")
-
-	hash = util.Hash(host + ":" + apiKey)
-	return
-}
 
 // RequiredParam is a helper function that can be used to fetch a requested parameter from the request.
 // It does the following checks:

@@ -32,6 +32,7 @@ func (c *CLI) serve(debug bool) {
 		"Duration for which connections are kept in the pool (e.g. 30s, 5m)")
 	addr := cmd.Flags().String("addr", ":8080",
 		"Address to bind the MCP server (only for HTTP transport)")
+	rateLimitReqPerSec := cmd.Flags().Float64("rate-limit-req-per-sec", 300, "Rate limit requests per second (Default: 300)")
 
 	c.root.AddCommand(cmd)
 
@@ -81,7 +82,10 @@ func (c *CLI) serve(debug bool) {
 		}
 
 		proto := protocol.New(t, *host, *apiKey, p)
-		rt := transport.NewRoute(mc, proto)
+		rt := transport.NewRoute(mc, proto,
+			transport.NewRateLimitMiddleware(*rateLimitReqPerSec, 10).ToolMiddleware,
+			transport.LoggerToolMiddleware(logger.NewSubLogger("_transport", nil)),
+		)
 		rt.Register()
 
 		ctx, stop := signal.NotifyContext(cmd.Context(), syscall.SIGINT, syscall.SIGTERM)

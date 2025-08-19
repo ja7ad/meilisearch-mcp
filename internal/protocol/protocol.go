@@ -9,6 +9,7 @@ import (
 	"github.com/go-playground/validator/v10"
 	"github.com/ja7ad/meilisearch-mcp/internal/logger"
 	"github.com/ja7ad/meilisearch-mcp/internal/pool"
+	"github.com/ja7ad/meilisearch-mcp/internal/util"
 	"github.com/meilisearch/meilisearch-go"
 )
 
@@ -50,7 +51,7 @@ func (p *Protocol) client(header http.Header) (meilisearch.ServiceManager, error
 			return nil, ErrNilPool
 		}
 
-		host, apiKey, hash := headers(header)
+		host, apiKey, hash := util.MeilisearchHeaders(header)
 		if host == "" {
 			return nil, ErrMissingHostHeader
 		}

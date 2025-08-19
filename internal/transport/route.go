@@ -6,14 +6,16 @@ import (
 )
 
 type Route struct {
-	mc    *server.MCPServer
-	proto *protocol.Protocol
+	mc          *server.MCPServer
+	proto       *protocol.Protocol
+	middlewares []ToolMiddleware
 }
 
-func NewRoute(mc *server.MCPServer, proto *protocol.Protocol) *Route {
+func NewRoute(mc *server.MCPServer, proto *protocol.Protocol, middlewares ...ToolMiddleware) *Route {
 	return &Route{
-		mc:    mc,
-		proto: proto,
+		mc:          mc,
+		proto:       proto,
+		middlewares: middlewares,
 	}
 }
 
@@ -22,11 +24,22 @@ func (r *Route) Register() {
 	r.registerTaskRoute()
 }
 
+func (r *Route) apply(handler server.ToolHandlerFunc, mw ...ToolMiddleware) server.ToolHandlerFunc {
+	if len(mw) == 0 {
+		return handler
+	}
+	return ChainToolMiddleware(mw...)(handler)
+}
+
 func (r *Route) registerIndexRoute() {
-	r.mc.AddTool(r.proto.CreateIndex())
-	r.mc.AddTool(r.proto.GetIndex())
+	tool, handler := r.proto.CreateIndex()
+	r.mc.AddTool(tool, r.apply(handler, r.middlewares...))
+
+	tool, handler = r.proto.GetIndex()
+	r.mc.AddTool(tool, r.apply(handler, r.middlewares...))
 }
 
 func (r *Route) registerTaskRoute() {
-	r.mc.AddTool(r.proto.GetTask())
+	tool, handler := r.proto.GetTask()
+	r.mc.AddTool(tool, r.apply(handler, r.middlewares...))
 }
