@@ -2,7 +2,6 @@ package protocol
 
 import (
 	"context"
-	"strconv"
 
 	"github.com/bytedance/sonic"
 	"github.com/mark3labs/mcp-go/mcp"
@@ -13,18 +12,14 @@ func (p *Protocol) GetTask() (mcp.Tool, server.ToolHandlerFunc) {
 	return mcp.NewTool(
 			"get_task",
 			mcp.WithDescription("Get a task by its ID"),
-			mcp.WithString(
+			mcp.WithNumber(
 				"task_id",
 				mcp.Description("ID of the task to retrieve"),
 				mcp.Required(),
+				mcp.Min(0),
 			),
 		), func(ctx context.Context, req mcp.CallToolRequest) (*mcp.CallToolResult, error) {
-			taskIDRaw, err := RequiredParam[string](req, "task_id")
-			if err != nil {
-				return mcp.NewToolResultError(err.Error()), nil
-			}
-
-			taskUID, err := strconv.ParseInt(taskIDRaw, 10, 64)
+			taskID, err := Required64Int(req, "task_id")
 			if err != nil {
 				return mcp.NewToolResultError(err.Error()), nil
 			}
@@ -34,7 +29,7 @@ func (p *Protocol) GetTask() (mcp.Tool, server.ToolHandlerFunc) {
 				return nil, err
 			}
 
-			task, err := client.GetTaskWithContext(ctx, taskUID)
+			task, err := client.GetTaskWithContext(ctx, taskID)
 			if err != nil {
 				return nil, err
 			}
