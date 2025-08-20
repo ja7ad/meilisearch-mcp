@@ -82,7 +82,7 @@ func NewHTTP(mc *server.MCPServer, enableSSE bool, addr string) Server {
 
 	httpSrv := &http.Server{
 		Addr:              addr,
-		Handler:           mux,
+		Handler:           withCORS(mux),
 		ReadHeaderTimeout: 5 * time.Second,
 		// Keep WriteTimeout generous when using SSE; the SSE handler
 		// will keep the connection open. This timeout applies per write.
