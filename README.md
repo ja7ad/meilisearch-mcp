@@ -6,6 +6,32 @@ A high-performance Go implementation of the Model Context Protocol (MCP) for Mei
   <img src="docs/mcp.gif" alt="Meilisearch MCP demo" />
 </p>
 
+
+## Table of Contents
+- [Features](#features)
+- [Quick Start](#quick-start)
+    - [Connect to Remote MCP Server](#1-connect-to-remote-mcp-server)
+    - [Download Latest Release](#2-download-latest-release)
+    - [Build from Source](#3-build-from-source)
+        - [Prerequisites](#prerequisites)
+        - [Build](#build)
+        - [Run (HTTP Transport)](#run-http-transport)
+        - [Run (STDIO Transport)](#run-stdio-transport)
+- [Docker](#docker)
+    - [Build Image](#build-image)
+    - [Run Container](#run-container)
+    - [Environment Variables](#environment-variables)
+    - [docker-compose Example](#docker-compose-example)
+- [Configuration Examples](#configuration-examples)
+    - [Generic HTTP (mcp-remote)](#generic-http-mcp-remote)
+    - [Local STDIO](#local-stdio)
+- [Supported Clients](#supported-clients)
+- [Security Notes](#security-notes)
+- [Resources](#resources)
+- [Contributing](#contributing)
+- [License](#license)
+
+
 ## Features
 - **Full-featured Meilisearch integration**: Supports the complete Meilisearch API for search, indexing, and management.
 - **MCP over HTTP and stdio**: Flexible transport for local and remote use, with HTTP supporting multiple clients and multi-instance connections.
@@ -153,6 +179,9 @@ services:
 - [Meilisearch](https://www.meilisearch.com/)
 - [MCP Spec](https://github.com/modelcontextprotocol)
 - [Project GitHub](https://github.com/ja7ad/meilisearch-mcp)
+
+## Contributing
+Contributions welcome! See [CONTRIBUTING.md](./CONTRIBUTING.md) for setup, commit message conventions (`feat:`, `fix:`, `chore:`, `test:`, `ci:` etc.), and required PR title prefixes (`[Feat]`, `[Fix]`, `[Chore]`, `[Refactor]`, etc.).
 
 ## License
 MIT
