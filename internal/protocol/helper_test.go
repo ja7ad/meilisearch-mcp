@@ -56,17 +56,11 @@ func TestSwapIndexes(t *testing.T) {
 	}
 
 	for _, tc := range cases {
-		// capture range variable
 		c := tc
 		t.Run(c.name, func(t *testing.T) {
 			got := swapIndexes(c.input)
 			if !reflect.DeepEqual(got, c.expected) {
-				// produce a diff-friendly error
-				for i := range got {
-					if i < len(c.expected) && !reflect.DeepEqual(got[i], c.expected[i]) {
-						// continue to show precise difference
-					}
-				}
+				// Simple diff output; rely on %#v formatting
 				t.Fatalf("unexpected result.\nexpected: %#v\n     got: %#v", c.expected, got)
 			}
 		})
