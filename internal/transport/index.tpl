@@ -69,8 +69,9 @@ button:hover,.btn:hover { background:var(--accent); color:#fff; border-color:var
 <script>
 const toggleTheme = () => { const root=document.documentElement; if(root.classList.contains('dark')){ root.classList.remove('dark'); localStorage.setItem('prefers-dark','0'); } else { root.classList.add('dark'); localStorage.setItem('prefers-dark','1'); }};
 window.addEventListener('DOMContentLoaded',()=>{ if(localStorage.getItem('prefers-dark')==='1'){ document.documentElement.classList.add('dark'); } enhanceCodeBlocks(); });
-async function ping() { const t0=performance.now(); try { await fetch(location.pathname,{method:'HEAD'}); const ms=(performance.now()-t0).toFixed(1); document.getElementById('latency').textContent=ms+' ms'; } catch(e){ document.getElementById('latency').textContent='n/a'; } }
+async function ping() { const t0=performance.now(); try { await fetch("/healthz",{method:'HEAD'}); const ms=(performance.now()-t0).toFixed(1); document.getElementById('latency').textContent=ms+' ms'; } catch(e){ document.getElementById('latency').textContent='n/a'; } }
 function copyURL(){ const inp=document.getElementById('mcp-url'); inp.select(); inp.setSelectionRange(0,99999); try { navigator.clipboard.writeText(inp.value); } catch(e){} flashButton(document.getElementById('url-copy-btn')); }
+function copySSEURL(){ const inp=document.getElementById('sse-url'); inp.select(); inp.setSelectionRange(0,99999); try { navigator.clipboard.writeText(inp.value); } catch(e){} flashButton(document.getElementById('url-sse-copy-btn')); }
 function flashButton(btn){ if(!btn) return; btn.classList.add('copied'); const orig=btn.dataset.label||btn.textContent; const span=btn.querySelector('span'); if(span){ span.textContent='Copied'; } else { btn.textContent='Copied'; } setTimeout(()=>{ if(span){ span.textContent=orig; } else { btn.textContent=orig; } btn.classList.remove('copied'); },1400); }
 function enhanceCodeBlocks(){ document.querySelectorAll('pre code').forEach(code=>{ const wrapper=document.createElement('div'); wrapper.className='code-wrap'; const pre=code.parentElement; pre.parentElement.insertBefore(wrapper,pre); wrapper.appendChild(pre); const raw=code.textContent.trim(); const highlighted=highlightJSONLike(raw); code.innerHTML=highlighted; code.classList.add('hl'); const btn=document.createElement('button'); btn.type='button'; btn.className='copy-btn'; btn.dataset.label='Copy'; btn.innerHTML='<svg fill="none" stroke-width="1.6" stroke="currentColor" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg><span>Copy</span>'; btn.addEventListener('click',()=>{ try { navigator.clipboard.writeText(raw);} catch(e){} flashButton(btn); }); wrapper.appendChild(btn); }); }
 function highlightJSONLike(src){ try { const obj=JSON.parse(src); let json=JSON.stringify(obj, null, 2); json=json.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); const keyStore=[]; json=json.replace(/("(?:\\"|[^"\\])*?")(?=:\s)/g,function(m){ var i=keyStore.length; keyStore.push(m); return '@@K'+i+'@@'; }); json=json.replace(/"(?:\\"|[^"\\])*?"/g,function(m){ return '<span class="tok-str">'+m+'</span>'; }); json=json.replace(/\b-?(?:0|[1-9]\d*)(?:\.\d+)?(?:[eE][+-]?\d+)?\b/g,function(m){ return '<span class="tok-num">'+m+'</span>'; }); json=json.replace(/\b(true|false)\b/g,function(m){ return '<span class="tok-bool">'+m+'</span>'; }); json=json.replace(/\bnull\b/g,'<span class="tok-null">null</span>'); json=json.replace(/[{}\[\],]/g,function(m){ return '<span class="tok-sym">'+m+'</span>'; }); keyStore.forEach(function(k,i){ var escaped=k.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); json=json.replace('@@K'+i+'@@','<span class="tok-key">'+escaped+'</span>'); }); return json; } catch(e) { return src.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); } }
@@ -99,6 +100,16 @@ function highlightJSONLike(src){ try { const obj=JSON.parse(src); let json=JSON.
       </button>
     </div>
   </div>
+  <div class="copy-box">
+      <h3 style="margin-top:0;">SSE Endpoint URL</h3>
+      <div class="copy-row">
+        <input id="sse-url" value="https://meilisearch.javad.dev/sse" readonly aria-label="SSE Endpoint URL" />
+        <button id="url-sse-copy-btn" onclick="copySSEURL()" data-label="Copy" class="btn" style="padding:.55rem .85rem;">
+          <svg fill="none" stroke-width="1.6" stroke="currentColor" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+          <span>Copy</span>
+        </button>
+      </div>
+    </div>
   <div class="notice small">Root path is human friendly; POST JSON MCP requests (newline-delimited streaming) to the same endpoint. Non-root paths also route here.</div>
 </header>
 <main>
