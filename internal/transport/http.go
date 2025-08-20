@@ -1,6 +1,7 @@
 package transport
 
 import (
+	"bytes"
 	"context"
 	_ "embed"
 	"html/template"
@@ -32,14 +33,16 @@ func NewHTTP(mc *server.MCPServer, addr string) Server {
 		if r.URL.Path == "/" {
 			w.Header().Set("Content-Type", "text/html; charset=utf-8")
 			if r.Method == http.MethodHead {
-				// For HEAD just send headers (fast liveness / latency check)
 				return
 			}
 			data := struct{ Version string }{Version: version.Version.String()}
-			if err := indexTemplate.Execute(w, data); err != nil {
-				w.WriteHeader(http.StatusInternalServerError)
-				_, _ = w.Write([]byte("template render error"))
+
+			var buf bytes.Buffer
+			if err := indexTemplate.Execute(&buf, data); err != nil {
+				http.Error(w, "template render error", http.StatusInternalServerError)
+				return
 			}
+			_, _ = buf.WriteTo(w)
 			return
 		}
 		mcpHandler.ServeHTTP(w, r)
