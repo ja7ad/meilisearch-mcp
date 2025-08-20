@@ -2,6 +2,10 @@
 
 A high-performance Go implementation of the Model Context Protocol (MCP) for Meilisearch. This server enables AI tooling (desktop & cloud) to connect with your Meilisearch data using the MCP standard over HTTP or stdio.
 
+<p align="center">
+  <img src="docs/mcp.gif" alt="Meilisearch MCP demo" />
+</p>
+
 ## Features
 - **Full-featured Meilisearch integration**: Supports the complete Meilisearch API for search, indexing, and management.
 - **MCP over HTTP and stdio**: Flexible transport for local and remote use, with HTTP supporting multiple clients and multi-instance connections.
