@@ -1,0 +1,58 @@
+builds:
+  - id: mcp
+    main: ./cmd/mcp/main.go
+    dir: ./cmd/mcp
+    binary: meilisearch-mcp
+    env:
+      - CGO_ENABLED=0
+    goos:
+      - linux
+      - windows
+      - darwin
+    goarch:
+      - "386"
+      - amd64
+      - arm
+      - arm64
+    goarm:
+      - "6"
+      - "7"
+    ignore:
+      - goos: linux
+        goarch: arm
+        goarm: "7"
+      - goos: windows
+        goarch: arm
+        goarm: "7"
+
+archives:
+  - builds:
+      - mcp
+    name_template: 'meilisearch_mcp_{{ .Version }}_{{ .Os }}_{{ .Arch }}'
+    format_overrides:
+      - goos: windows
+        format: zip
+    files:
+      - LICENSE
+
+nfpms:
+  - license: MIT License
+    maintainer: Javad Rajabzadeh <ja7ad@live.com>
+    homepage: https://meilisearch.javad.dev
+    bindir: /usr/local/bin
+    description: Meilisearch MCP server
+    formats:
+      - deb
+      - rpm
+
+checksum:
+  name_template: 'meilisearch_mcp_checksums.txt'
+
+changelog:
+  sort: asc
+  filters:
+    exclude:
+      - '^docs:'
+      - '^test:'
+      - Merge pull request
+      - Merge branch
