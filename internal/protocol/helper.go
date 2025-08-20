@@ -1,6 +1,7 @@
 package protocol
 
 import (
+	"errors"
 	"fmt"
 
 	"github.com/mark3labs/mcp-go/mcp"
@@ -47,6 +48,32 @@ func Required64Int(r mcp.CallToolRequest, p string) (int64, error) {
 		return 0, err
 	}
 	return int64(v), nil
+}
+
+func RequiredStringArrayParam(r mcp.CallToolRequest, p string) ([]string, error) {
+	// Check if the parameter is present in the request
+	if _, ok := r.GetArguments()[p]; !ok {
+		return []string{}, errors.New("missing array param")
+	}
+
+	switch v := r.GetArguments()[p].(type) {
+	case nil:
+		return []string{}, errors.New("missing array param")
+	case []string:
+		return v, nil
+	case []any:
+		strSlice := make([]string, len(v))
+		for i, v := range v {
+			s, ok := v.(string)
+			if !ok {
+				return []string{}, fmt.Errorf("parameter %s is not of type string, is %T", p, v)
+			}
+			strSlice[i] = s
+		}
+		return strSlice, nil
+	default:
+		return []string{}, fmt.Errorf("parameter %s could not be coerced to []string, is %T", p, r.GetArguments()[p])
+	}
 }
 
 // OptionalParam is a helper function that can be used to fetch a requested parameter from the request.

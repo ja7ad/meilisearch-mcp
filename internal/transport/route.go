@@ -60,4 +60,7 @@ func (r *Route) registerKeyRoute() {
 
 	tool, handler = r.proto.GetKey()
 	r.mc.AddTool(tool, r.apply(handler, r.middlewares...))
+
+	tool, handler = r.proto.CreateKey()
+	r.mc.AddTool(tool, r.apply(handler, r.middlewares...))
 }
