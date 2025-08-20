@@ -1,6 +1,6 @@
 builds:
   - id: mcp
-    main: ./cmd/mcp/main.go
+    main: ./main.go
     dir: ./cmd/mcp
     binary: meilisearch-mcp
     env:
