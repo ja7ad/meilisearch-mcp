@@ -126,7 +126,7 @@ function highlightJSONLike(src){ try { const obj=JSON.parse(src); let json=JSON.
         <h3 style="margin-top:0;">Local STDIO</h3>
         <pre><code>{
   "command": "/usr/bin/meilisearch-mcp",
-  "args": ["serve","--meili-host","http://localhost:7700","--meili-api-key","masterKey"],
+  "args": ["serve", "stdio","--meili-host","http://localhost:7700","--meili-api-key","masterKey"],
   "env": {},
   "active": false
 }</code></pre>

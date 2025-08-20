@@ -118,7 +118,7 @@ func (c *CLI) stdio(serve *cobra.Command, debug bool) {
 		}
 
 		logger.InitGlobalLogger(cfg)
-		logger.Info("Starting Meilisearch Stdio MCP server", "version", version.Version.String())
+		logger.Info("Starting Meilisearch MCP server", "version", version.Version.String())
 
 		mc := server.NewMCPServer("Meilisearch Stdio MCP",
 			version.Version.String(),
