@@ -159,7 +159,7 @@ func (p *Protocol) ListIndex() (tool mcp.Tool, handler server.ToolHandlerFunc) {
 				offset = 0 // Default offset if not specified
 			}
 
-			res, err := client.ListIndexes(&meilisearch.IndexesQuery{
+			res, err := client.ListIndexesWithContext(ctx, &meilisearch.IndexesQuery{
 				Limit:  limit,
 				Offset: offset,
 			})
@@ -203,7 +203,7 @@ func (p *Protocol) SwapIndex() (tool mcp.Tool, handler server.ToolHandlerFunc) {
 				return mcp.NewToolResultError(err.Error()), nil
 			}
 
-			task, err := client.SwapIndexes(swapIndexes(idxObj))
+			task, err := client.SwapIndexesWithContext(ctx, swapIndexes(idxObj))
 			if err != nil {
 				return mcp.NewToolResultError(err.Error()), nil
 			}

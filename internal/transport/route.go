@@ -22,6 +22,7 @@ func NewRoute(mc *server.MCPServer, proto *protocol.Protocol, middlewares ...Too
 func (r *Route) Register() {
 	r.registerIndexRoute()
 	r.registerTaskRoute()
+	r.registerKeyRoute()
 }
 
 func (r *Route) apply(handler server.ToolHandlerFunc, mw ...ToolMiddleware) server.ToolHandlerFunc {
@@ -50,5 +51,13 @@ func (r *Route) registerIndexRoute() {
 
 func (r *Route) registerTaskRoute() {
 	tool, handler := r.proto.GetTask()
+	r.mc.AddTool(tool, r.apply(handler, r.middlewares...))
+}
+
+func (r *Route) registerKeyRoute() {
+	tool, handler := r.proto.ListKeys()
+	r.mc.AddTool(tool, r.apply(handler, r.middlewares...))
+
+	tool, handler = r.proto.GetKey()
 	r.mc.AddTool(tool, r.apply(handler, r.middlewares...))
 }
