@@ -34,7 +34,7 @@ jobs:
           push: true
           tags: |
             ja7adr/meilisearch-mcp:latest
-            ja7adr/meilisearch-mcp:${{ github.ref_name }}   # e.g. v1.2.3
+            ja7adr/meilisearch-mcp:${{ github.ref_name }}
 
   deploy:
     needs: build-and-push-image
