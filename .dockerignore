@@ -1,0 +1,23 @@
+# Exclude VCS
+.git
+.gitignore
+
+# Build artifacts
+/build
+/bin
+/dist
+
+# Node / frontend caches (if any future additions)
+node_modules
+
+# IDE / editor
+.vscode
+.idea
+*.swp
+
+# OS
+.DS_Store
+
+# Tests cache
+coverage*
+
