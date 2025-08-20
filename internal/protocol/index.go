@@ -175,3 +175,44 @@ func (p *Protocol) ListIndex() (tool mcp.Tool, handler server.ToolHandlerFunc) {
 			return mcp.NewToolResultText(string(b)), nil
 		}
 }
+
+func (p *Protocol) SwapIndex() (tool mcp.Tool, handler server.ToolHandlerFunc) {
+	return mcp.NewTool("swap_index",
+			mcp.WithDescription("Swap two indexes in Meilisearch"),
+			mcp.WithArray("indexes",
+				mcp.Required(),
+				mcp.Description("Indexes to swap"),
+				mcp.Items(map[string]any{
+					"type":     "array",
+					"minItems": 2,
+					"maxItems": 2,
+					"items": map[string]any{
+						"type": "string",
+					},
+				}),
+			),
+		), func(ctx context.Context, req mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+			idxObj, ok := req.GetArguments()["indexes"].([]interface{})
+			if !ok {
+				return mcp.NewToolResultError("indexes parameter must be an array of string two pairs, " +
+					"for example: { \"indexes\": [ [ \"foobar1\", \"foobar2\" ], [ \"foobar3\", \"foobar4\" ] ] }"), nil
+			}
+
+			client, err := p.client(req.Header)
+			if err != nil {
+				return mcp.NewToolResultError(err.Error()), nil
+			}
+
+			task, err := client.SwapIndexes(swapIndexes(idxObj))
+			if err != nil {
+				return mcp.NewToolResultError(err.Error()), nil
+			}
+
+			b, err := sonic.Marshal(task)
+			if err != nil {
+				return nil, err
+			}
+
+			return mcp.NewToolResultText(string(b)), nil
+		}
+}

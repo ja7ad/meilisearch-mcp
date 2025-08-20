@@ -43,6 +43,9 @@ func (r *Route) registerIndexRoute() {
 
 	tool, handler = r.proto.DeleteIndex()
 	r.mc.AddTool(tool, r.apply(handler, r.middlewares...))
+
+	tool, handler = r.proto.SwapIndex()
+	r.mc.AddTool(tool, r.apply(handler, r.middlewares...))
 }
 
 func (r *Route) registerTaskRoute() {
