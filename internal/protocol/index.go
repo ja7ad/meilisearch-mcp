@@ -59,6 +59,39 @@ func (p *Protocol) CreateIndex() (tool mcp.Tool, handler server.ToolHandlerFunc)
 		}
 }
 
+func (p *Protocol) DeleteIndex() (tool mcp.Tool, handler server.ToolHandlerFunc) {
+	return mcp.NewTool(
+			"delete_index",
+			mcp.WithDescription("Update exists index in Meilisearch"),
+			mcp.WithString("index_name",
+				mcp.Description("Name of the index for delete"),
+				mcp.Required(),
+			),
+		), func(ctx context.Context, req mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+			uid, err := RequiredParam[string](req, "index_name")
+			if err != nil {
+				return mcp.NewToolResultError(err.Error()), nil
+			}
+
+			client, err := p.client(req.Header)
+			if err != nil {
+				return mcp.NewToolResultError(err.Error()), nil
+			}
+
+			task, err := client.DeleteIndex(uid)
+			if err != nil {
+				return mcp.NewToolResultError(err.Error()), nil
+			}
+
+			b, err := sonic.Marshal(task)
+			if err != nil {
+				return nil, err
+			}
+
+			return mcp.NewToolResultText(string(b)), nil
+		}
+}
+
 func (p *Protocol) GetIndex() (tool mcp.Tool, handler server.ToolHandlerFunc) {
 	return mcp.NewTool(
 			"get_index",
