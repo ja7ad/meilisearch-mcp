@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/mark3labs/mcp-go/mcp"
+	"github.com/meilisearch/meilisearch-go"
 )
 
 // RequiredParam is a helper function that can be used to fetch a requested parameter from the request.
@@ -136,4 +137,30 @@ func WithPagination() mcp.ToolOption {
 			mcp.Max(100),
 		)(tool)
 	}
+}
+
+// swapIndexes converts a heterogeneous slice of index pair representations
+// (each expected to be a []interface{} of length 2 holding strings) into
+// Meilisearch SwapIndexesParams. Invalid entries (not a []interface{} of length 2)
+// are skipped. Non-string elements inside otherwise valid pairs are left as empty strings.
+func swapIndexes(arrs []interface{}) []*meilisearch.SwapIndexesParams {
+	params := make([]*meilisearch.SwapIndexesParams, 0, len(arrs))
+
+	for _, pair := range arrs {
+		arr, ok := pair.([]interface{})
+		if !ok || len(arr) != 2 {
+			continue
+		}
+		indexes := make([]string, 2)
+		for i, v := range arr {
+			s, ok := v.(string)
+			if !ok {
+				continue
+			}
+			indexes[i] = s
+		}
+		params = append(params, &meilisearch.SwapIndexesParams{Indexes: indexes})
+	}
+
+	return params
 }
