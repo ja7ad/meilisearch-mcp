@@ -17,6 +17,7 @@ A high-performance Go implementation of the Model Context Protocol (MCP) for Mei
         - [Build](#build)
         - [Run (HTTP Transport)](#run-http-transport)
         - [Run (STDIO Transport)](#run-stdio-transport)
+- [Available Tools](#available-tools)
 - [Docker](#docker)
     - [Build Image](#build-image)
     - [Run Container](#run-container)
@@ -96,6 +97,30 @@ Optionally enable Server-Sent Events streaming:
 ```sh
 ./build/meilisearch-mcp serve stdio --meili-host http://localhost:7700 --meili-api-key masterKey
 ```
+
+## Available Tools
+A concise reference of all MCP tools exposed by this server. Each tool returns JSON text (raw Meilisearch API response or task object). Errors are returned via MCP error tool results.
+
+| Tool | Description |
+| ---- | ----------- |
+| `create_index` | Create a new index (optionally with a primary key) |
+| `delete_index` | Delete an existing index |
+| `get_index` | Retrieve a single index definition |
+| `list_indexes` | List indexes (paginated) |
+| `swap_index` | Swap pairs of indexes atomically |
+| `list_keys` | List API keys (paginated) |
+| `get_key` | Get a single API key (by key or UID) |
+| `create_key` | Create a new API key with actions & index scope |
+| `get_task` | Get status of an asynchronous task |
+
+### Using Tools Over HTTP
+When using HTTP transport, include these headers per request to target different Meilisearch instances dynamically:
+- X-Meili-Instance: http://host:7700 (required on HTTP transport)
+- X-Meili-APIKey: <api key> (optional if instance allows anonymous access)
+
+Stdio transport uses the CLI flags/ENV (`--meili-host`, `--meili-api-key`) and does not require headers.
+
+> Pagination defaults: limit=20, offset=0 when omitted or <=0.
 
 ## Docker
 
