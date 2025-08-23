@@ -42,7 +42,10 @@ func NewHTTP(mc *server.MCPServer, enableSSE bool, addr string) Server {
 
 	var sseHandler http.Handler
 	if enableSSE {
-		sseHandler = server.NewSSEServer(mc)
+		sseHandler = server.NewSSEServer(mc,
+			server.WithSSEEndpoint("/sse"),
+			server.WithMessageEndpoint("/message"),
+		)
 		s.sse = sseHandler
 
 		s.logging.Info("sse server enabled", "addr", addr+"/sse")
@@ -90,10 +93,13 @@ func NewHTTP(mc *server.MCPServer, enableSSE bool, addr string) Server {
 		Addr:              addr,
 		Handler:           withCORS(mux),
 		ReadHeaderTimeout: 5 * time.Second,
+		IdleTimeout:       120 * time.Second,
+	}
+
+	if enableSSE {
 		// Keep WriteTimeout generous when using SSE; the SSE handler
 		// will keep the connection open. This timeout applies per write.
-		WriteTimeout: 0, // 0 = no timeout; avoid closing long-lived SSE streams
-		IdleTimeout:  120 * time.Second,
+		httpSrv.WriteTimeout = 0
 	}
 
 	s.httpSrv = httpSrv
