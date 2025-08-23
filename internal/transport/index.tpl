@@ -100,6 +100,7 @@ function highlightJSONLike(src){ try { const obj=JSON.parse(src); let json=JSON.
       </button>
     </div>
   </div>
+  {{ if .EnableSSE }}
   <div class="copy-box">
       <h3 style="margin-top:0;">SSE Endpoint URL</h3>
       <div class="copy-row">
@@ -110,6 +111,7 @@ function highlightJSONLike(src){ try { const obj=JSON.parse(src); let json=JSON.
         </button>
       </div>
     </div>
+  {{ end }}
   <div class="notice small">Root path is human friendly; POST JSON MCP requests (newline-delimited streaming) to the same endpoint. Non-root paths also route here.</div>
 </header>
 <main>

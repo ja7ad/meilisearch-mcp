@@ -65,7 +65,13 @@ func NewHTTP(mc *server.MCPServer, enableSSE bool, addr string) Server {
 		if r.Method == http.MethodHead {
 			return
 		}
-		data := struct{ Version string }{Version: version.Version.String()}
+		data := struct {
+			Version   string
+			EnableSSE bool
+		}{
+			Version:   version.Version.String(),
+			EnableSSE: s.enableSSE,
+		}
 
 		var buf bytes.Buffer
 		if err := indexTemplate.Execute(&buf, data); err != nil {
