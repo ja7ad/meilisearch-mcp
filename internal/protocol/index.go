@@ -62,7 +62,7 @@ func (p *Protocol) CreateIndex() (tool mcp.Tool, handler server.ToolHandlerFunc)
 func (p *Protocol) DeleteIndex() (tool mcp.Tool, handler server.ToolHandlerFunc) {
 	return mcp.NewTool(
 			"delete_index",
-			mcp.WithDescription("Update exists index in Meilisearch"),
+			mcp.WithDescription("Delete an index in Meilisearch"),
 			mcp.WithString("index_name",
 				mcp.Description("Name of the index for delete"),
 				mcp.Required(),
