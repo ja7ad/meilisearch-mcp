@@ -88,10 +88,6 @@ make build
 ```sh
 ./build/meilisearch-mcp serve http --addr :8080 --meili-host http://localhost:7700 --meili-api-key masterKey
 ```
-Optionally enable Server-Sent Events streaming:
-```sh
-./build/meilisearch-mcp serve http --addr :8080 --meili-host http://localhost:7700 --meili-api-key masterKey --sse
-```
 
 #### Run (STDIO Transport)
 ```sh
