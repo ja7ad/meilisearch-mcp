@@ -59,6 +59,54 @@ func (p *Protocol) CreateIndex() (tool mcp.Tool, handler server.ToolHandlerFunc)
 		}
 }
 
+func (p *Protocol) UpdateIndex() (tool mcp.Tool, handler server.ToolHandlerFunc) {
+	return mcp.NewTool(
+			"update_index",
+			mcp.WithDescription("Update an primary key of index in Meilisearch"),
+			mcp.WithString("index_name",
+				mcp.Description("Name of the index for delete"),
+				mcp.Required(),
+			),
+			mcp.WithString("primary_key", mcp.Description("Primary key for the index"), mcp.Required()),
+		), func(ctx context.Context, req mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+			uid, err := RequiredParam[string](req, "index_name")
+			if err != nil {
+				return mcp.NewToolResultError(err.Error()), nil
+			}
+
+			primaryKey, err := OptionalParam[string](req, "primary_key")
+			if err != nil {
+				return mcp.NewToolResultError(err.Error()), nil
+			}
+
+			if err := p.validate(uid, "max=250,min=1"); err != nil {
+				return mcp.NewToolResultError(err.Error()), nil
+			}
+
+			if err := p.validate(primaryKey, "max=250,min=1"); err != nil {
+				return mcp.NewToolResultError(err.Error()), nil
+			}
+
+			client, err := p.client(req.Header)
+			if err != nil {
+				return mcp.NewToolResultError(err.Error()), nil
+			}
+
+			idx := client.Index(uid)
+			task, err := idx.UpdateIndex(primaryKey)
+			if err != nil {
+				return mcp.NewToolResultError(err.Error()), nil
+			}
+
+			b, err := sonic.Marshal(task)
+			if err != nil {
+				return nil, err
+			}
+
+			return mcp.NewToolResultText(string(b)), nil
+		}
+}
+
 func (p *Protocol) DeleteIndex() (tool mcp.Tool, handler server.ToolHandlerFunc) {
 	return mcp.NewTool(
 			"delete_index",
