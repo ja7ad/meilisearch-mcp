@@ -35,7 +35,7 @@ A high-performance Go implementation of the Model Context Protocol (MCP) for Mei
 
 ## Features
 - **Full-featured Meilisearch integration**: Supports the complete Meilisearch API for search, indexing, and management.
-- **MCP over HTTP, SSE and stdio**: Flexible transport for local and remote use, with HTTP and SSE supporting multiple clients and multi-instance connections.
+- **MCP over HTTP and stdio**: Flexible transport for local and remote use, with HTTP supporting multiple clients and multi-instance connections.
 - **Secure by design**: Built-in support for API keys, recommended TLS via reverse proxy, and security best practices for header forwarding and rate limiting.
 - **Streaming JSON**: Efficient newline-delimited streaming for requests and responses.
 - **Configurable**: Easily connect to any Meilisearch instance and manage API keys per client.
