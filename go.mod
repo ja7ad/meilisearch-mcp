@@ -1,6 +1,6 @@
 module github.com/ja7ad/meilisearch-mcp
 
-go 1.24.3
+go 1.25.0
 
 tool github.com/golangci/golangci-lint/cmd/golangci-lint
 
