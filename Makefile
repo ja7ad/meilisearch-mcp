@@ -6,6 +6,11 @@ build-docker:
 	echo "Building the Docker image..."
 	docker build -t meilisearch-mcp:latest .
 
+dev-tools:
+	@echo "Installing development tools..."
+	go install github.com/golangci/golangci-lint/v2/cmd/golangci-lint@v2.4.0
+	go install mvdan.cc/gofumpt@latest
+
 tests:
 	@echo "Running unit tests..."
 	go test -v ./...
@@ -17,8 +22,8 @@ check-all:
 
 fmt:
 	@echo "formatting code..."
-	go tool gofumpt -l -w .
+	gofumpt -l -w .
 
 check:
 	@echo "linting..."
-	go tool golangci-lint run --timeout=20m0s --tests=false -v
+	golangci-lint run --timeout=20m0s --tests=false -v
