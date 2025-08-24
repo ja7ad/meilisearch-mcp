@@ -41,22 +41,22 @@ func NewHTTP(mc *server.MCPServer, addr string) Server {
 	mux := http.NewServeMux()
 
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "text/html; charset=utf-8")
-		if r.Method == http.MethodHead {
-			return
-		}
-		data := struct {
-			Version string
-		}{
-			Version: version.Version.String(),
-		}
+		if r.URL.Path == "/" {
+			w.Header().Set("Content-Type", "text/html; charset=utf-8")
+			if r.Method == http.MethodHead {
+				return
+			}
+			data := struct{ Version string }{Version: version.Version.String()}
 
-		var buf bytes.Buffer
-		if err := indexTemplate.Execute(&buf, data); err != nil {
-			http.Error(w, "template render error", http.StatusInternalServerError)
+			var buf bytes.Buffer
+			if err := indexTemplate.Execute(&buf, data); err != nil {
+				http.Error(w, "template render error", http.StatusInternalServerError)
+				return
+			}
+			_, _ = buf.WriteTo(w)
 			return
 		}
-		_, _ = buf.WriteTo(w)
+		httpHandler.ServeHTTP(w, r)
 	})
 
 	mux.HandleFunc("/healthz", func(w http.ResponseWriter, _ *http.Request) {
