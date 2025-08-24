@@ -24,7 +24,6 @@ ENV MEILI_HOST="http://localhost:7700" \
     MCP_POOL_SIZE=100 \
     MCP_POOL_DURATION="5m" \
     MCP_RATE_LIMIT_RPS=300 \
-    MCP_ENABLE_SSE=false \
     MCP_DEBUG=0
 
 EXPOSE 8080
