@@ -5,7 +5,7 @@ import "fmt"
 var Version = Ver{
 	Major: 0,
 	Minor: 2,
-	Patch: 5,
+	Patch: 8,
 }
 
 // Ver defines the version of fyntrix software.
