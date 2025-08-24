@@ -44,8 +44,6 @@ func (c *CLI) http(serve *cobra.Command, debug bool) {
 	addr := cmd.Flags().String("addr", ":8080",
 		"Address to bind the MCP server (only for HTTP transport)")
 	rateLimitReqPerSec := cmd.Flags().Float64("rate-limit-req-per-sec", 300, "Rate limit requests per second (Default: 300)")
-	sse := cmd.Flags().Bool("sse", false,
-		"Enable Server-Sent Events (SSE) for the MCP server (Default: false)")
 
 	serve.AddCommand(cmd)
 
@@ -78,7 +76,7 @@ func (c *CLI) http(serve *cobra.Command, debug bool) {
 		}
 
 		p := pool.New(*poolSize, *poolDuration)
-		srv := transport.NewHTTP(mc, *sse, *addr)
+		srv := transport.NewHTTP(mc, *addr)
 
 		proto := protocol.New(protocol.TransportHTTP, *host, *apiKey, p)
 		rt := transport.NewRoute(mc, proto,

@@ -22,58 +22,33 @@ var indexTemplate = template.Must(template.New("index").Parse(indexTpl))
 type HTTP struct {
 	addr      string
 	mcp       http.Handler
-	sse       http.Handler
 	httpSrv   *http.Server
 	errCh     chan error
 	enableSSE bool
 	logging   *logger.SubLogger
 }
 
-func NewHTTP(mc *server.MCPServer, enableSSE bool, addr string) Server {
+func NewHTTP(mc *server.MCPServer, addr string) Server {
 	s := &HTTP{
-		addr:      addr,
-		errCh:     make(chan error, 1),
-		enableSSE: enableSSE,
+		addr:  addr,
+		errCh: make(chan error, 1),
 	}
 
 	s.logging = logger.NewSubLogger("_transport", s)
 
 	httpHandler := server.NewStreamableHTTPServer(mc)
 
-	var sseHandler http.Handler
-	if enableSSE {
-		sseHandler = server.NewSSEServer(mc,
-			server.WithSSEEndpoint("/sse"),
-			server.WithMessageEndpoint("/message"),
-		)
-		s.sse = sseHandler
-
-		s.logging.Info("sse server enabled", "addr", addr+"/sse")
-	}
-
 	mux := http.NewServeMux()
 
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		if r.URL.Path != "/" {
-			if enableSSE && r.URL.Path == "/sse" {
-				sseHandler.ServeHTTP(w, r)
-				return
-			}
-			httpHandler.ServeHTTP(w, r)
-			return
-		}
-
-		// Exact "/"
 		w.Header().Set("Content-Type", "text/html; charset=utf-8")
 		if r.Method == http.MethodHead {
 			return
 		}
 		data := struct {
-			Version   string
-			EnableSSE bool
+			Version string
 		}{
-			Version:   version.Version.String(),
-			EnableSSE: s.enableSSE,
+			Version: version.Version.String(),
 		}
 
 		var buf bytes.Buffer
@@ -94,12 +69,6 @@ func NewHTTP(mc *server.MCPServer, enableSSE bool, addr string) Server {
 		Handler:           withCORS(mux),
 		ReadHeaderTimeout: 5 * time.Second,
 		IdleTimeout:       120 * time.Second,
-	}
-
-	if enableSSE {
-		// Keep WriteTimeout generous when using SSE; the SSE handler
-		// will keep the connection open. This timeout applies per write.
-		httpSrv.WriteTimeout = 0
 	}
 
 	s.httpSrv = httpSrv
