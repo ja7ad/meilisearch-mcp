@@ -101,17 +101,18 @@ Optionally enable Server-Sent Events streaming:
 ## Available Tools
 A concise reference of all MCP tools exposed by this server. Each tool returns JSON text (raw Meilisearch API response or task object). Errors are returned via MCP error tool results.
 
-| Tool | Description |
-| ---- | ----------- |
+| Tool           | Description |
+|----------------| ----------- |
 | `create_index` | Create a new index (optionally with a primary key) |
+| `update_index` | Update an primary key of index in Meilisearch |
 | `delete_index` | Delete an existing index |
-| `get_index` | Retrieve a single index definition |
+| `get_index`    | Retrieve a single index definition |
 | `list_indexes` | List indexes (paginated) |
-| `swap_index` | Swap pairs of indexes atomically |
-| `list_keys` | List API keys (paginated) |
-| `get_key` | Get a single API key (by key or UID) |
-| `create_key` | Create a new API key with actions & index scope |
-| `get_task` | Get status of an asynchronous task |
+| `swap_index`   | Swap pairs of indexes atomically |
+| `list_keys`    | List API keys (paginated) |
+| `get_key`      | Get a single API key (by key or UID) |
+| `create_key`   | Create a new API key with actions & index scope |
+| `get_task`     | Get status of an asynchronous task |
 
 ### Using Tools Over HTTP
 When using HTTP transport, include these headers per request to target different Meilisearch instances dynamically:
