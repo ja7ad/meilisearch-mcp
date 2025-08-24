@@ -133,14 +133,6 @@ docker run --rm -p 8080:8080 \
   -e MEILI_API_KEY=masterKey \
   meilisearch-mcp:latest
 ```
-Enable SSE in the container:
-```sh
-docker run --rm -p 8080:8080 \
-  -e MEILI_HOST=http://host.docker.internal:7700 \
-  -e MEILI_API_KEY=masterKey \
-  -e MCP_ENABLE_SSE=true \
-  meilisearch-mcp:latest
-```
 
 ### Environment Variables
 - MEILI_HOST (default: http://localhost:7700)
@@ -149,7 +141,6 @@ docker run --rm -p 8080:8080 \
 - MCP_POOL_SIZE (default: 100)
 - MCP_POOL_DURATION (default: 5m)
 - MCP_RATE_LIMIT_RPS (default: 300)
-- MCP_ENABLE_SSE (set to true/1/yes to add --sse flag and enable Server-Sent Events streaming)
 - MCP_DEBUG (1 to enable --debug)
 
 ### docker-compose Example
@@ -162,7 +153,6 @@ services:
       MEILI_HOST: http://meili:7700
       MEILI_API_KEY: ${MEILI_API_KEY:-masterKey}
       MCP_RATE_LIMIT_RPS: 200
-      MCP_ENABLE_SSE: true  # enable SSE
     ports:
       - "8080:8080"
     depends_on:
