@@ -18,9 +18,7 @@ RUN chmod +x /app/docker-entrypoint.sh && chown -R app:app /app
 
 USER app
 
-ENV MEILI_HOST="http://localhost:7700" \
-    MEILI_API_KEY="" \
-    MCP_ADDR=":8080" \
+ENV MCP_ADDR=":8080" \
     MCP_POOL_SIZE=100 \
     MCP_POOL_DURATION="5m" \
     MCP_RATE_LIMIT_RPS=300 \
