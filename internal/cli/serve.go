@@ -63,6 +63,7 @@ func (c *CLI) http(serve *cobra.Command, debug bool) {
 			version.Version.String(),
 			server.WithToolCapabilities(true),
 			server.WithResourceCapabilities(true, true),
+			server.WithPromptCapabilities(true),
 		)
 
 		if *poolSize <= 0 {
@@ -124,6 +125,7 @@ func (c *CLI) stdio(serve *cobra.Command, debug bool) {
 			version.Version.String(),
 			server.WithToolCapabilities(true),
 			server.WithResourceCapabilities(true, true),
+			server.WithPromptCapabilities(true),
 		)
 
 		if *host == "" {
