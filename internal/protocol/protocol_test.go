@@ -366,3 +366,25 @@ func TestListWebhooks(t *testing.T) {
 	assert.Equal(t, "w1", webhooks.Result[0].UUID)
 	assert.Equal(t, "http://webhook.internal", webhooks.Result[0].URL)
 }
+
+func TestMultiSearchPrompt(t *testing.T) {
+	proto := New(TransportStdio, "http://localhost:7700", "key", nil)
+
+	_, handler := proto.MultiSearchPrompt()
+	req := mcp.GetPromptRequest{}
+	req.Params.Name = "multi_search_help"
+	req.Params.Arguments = map[string]string{
+		"queries": `[{"indexUid":"movies","q":"sci-fi"}]`,
+	}
+
+	res, err := handler(context.Background(), req)
+	assert.NoError(t, err)
+	assert.Equal(t, "Multi Search Helper", res.Description)
+	assert.Len(t, res.Messages, 1)
+	assert.Equal(t, mcp.RoleUser, res.Messages[0].Role)
+
+	textContents, ok := mcp.AsTextContent(res.Messages[0].Content)
+	assert.True(t, ok)
+	assert.Contains(t, textContents.Text, "multi_search")
+	assert.Contains(t, textContents.Text, `[{"indexUid":"movies","q":"sci-fi"}]`)
+}

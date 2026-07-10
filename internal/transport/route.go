@@ -246,4 +246,7 @@ func (r *Route) registerPrompts() {
 
 	pr, prHandler = r.proto.ConfigureSettingsPrompt()
 	r.mc.AddPrompt(pr, prHandler)
+
+	pr, prHandler = r.proto.MultiSearchPrompt()
+	r.mc.AddPrompt(pr, prHandler)
 }

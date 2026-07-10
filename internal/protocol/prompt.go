@@ -76,3 +76,22 @@ func (p *Protocol) ConfigureSettingsPrompt() (prompt mcp.Prompt, handler server.
 			), nil
 		}
 }
+
+func (p *Protocol) MultiSearchPrompt() (prompt mcp.Prompt, handler server.PromptHandlerFunc) {
+	return mcp.NewPrompt(
+			"multi_search_help",
+			mcp.WithPromptDescription("Prompt to guide through performing a multi-index search in Meilisearch"),
+			mcp.WithArgument("queries", mcp.ArgumentDescription("JSON array of queries containing indexUid and q (e.g. '[{\"indexUid\":\"movies\",\"q\":\"sci-fi\"}]')"), mcp.RequiredArgument()),
+		), func(ctx context.Context, req mcp.GetPromptRequest) (*mcp.GetPromptResult, error) {
+			queries := req.Params.Arguments["queries"]
+
+			promptText := fmt.Sprintf("Please use the 'multi_search' tool with the following query array: %s. Parse the search results for each index and summarize the key matches.", queries)
+
+			return mcp.NewGetPromptResult(
+				"Multi Search Helper",
+				[]mcp.PromptMessage{
+					mcp.NewPromptMessage(mcp.RoleUser, mcp.NewTextContent(promptText)),
+				},
+			), nil
+		}
+}
