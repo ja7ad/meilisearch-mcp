@@ -12,7 +12,7 @@ import (
 
 func (p *Protocol) ListKeys() (tool mcp.Tool, handler server.ToolHandlerFunc) {
 	return mcp.NewTool("list_keys",
-			mcp.WithDescription("List all API keys in Meilisearch"),
+			mcp.WithDescription("List all API keys in Meilisearch. Reference: https://www.meilisearch.com/docs/reference/api/keys/list-api-keys.md"),
 			WithPagination(),
 		), func(ctx context.Context, req mcp.CallToolRequest) (*mcp.CallToolResult, error) {
 			limit, err := OptionalInt64Param(req, "limit")
@@ -57,30 +57,16 @@ func (p *Protocol) ListKeys() (tool mcp.Tool, handler server.ToolHandlerFunc) {
 
 func (p *Protocol) GetKey() (tool mcp.Tool, handler server.ToolHandlerFunc) {
 	return mcp.NewTool("get_key",
-			mcp.WithDescription("Get API key"),
-			mcp.WithString("key", mcp.Description("API key")),
-			mcp.WithString("uid", mcp.Description("Key UID")),
+			mcp.WithDescription("Get API key by key string or UID. Reference: https://www.meilisearch.com/docs/reference/api/keys/get-api-key.md"),
+			mcp.WithString("key", mcp.Description("API key string or UID")),
 		), func(ctx context.Context, req mcp.CallToolRequest) (*mcp.CallToolResult, error) {
-			key, err := OptionalParam[string](req, "key")
+			key, err := RequiredParam[string](req, "key")
 			if err != nil {
 				return mcp.NewToolResultError(err.Error()), nil
 			}
 
-			uid, err := OptionalParam[string](req, "uid")
-			if err != nil {
+			if err := p.validate(key, "max=250,min=1"); err != nil {
 				return mcp.NewToolResultError(err.Error()), nil
-			}
-
-			if key == "" && uid == "" {
-				return mcp.NewToolResultError("API key or UID is required"), nil
-			} else if key != "" {
-				if err := p.validate(key, "max=250,min=1"); err != nil {
-					return mcp.NewToolResultError(err.Error()), nil
-				}
-			} else if uid != "" {
-				if err := p.validate(uid, "max=250,min=1"); err != nil {
-					return mcp.NewToolResultError(err.Error()), nil
-				}
 			}
 
 			client, err := p.client(req.Header)
@@ -104,31 +90,22 @@ func (p *Protocol) GetKey() (tool mcp.Tool, handler server.ToolHandlerFunc) {
 
 func (p *Protocol) CreateKey() (tool mcp.Tool, handler server.ToolHandlerFunc) {
 	return mcp.NewTool("create_key",
-			mcp.WithDescription("Create a new API key"),
+			mcp.WithDescription("Create a new API key. Reference: https://www.meilisearch.com/docs/reference/api/keys/create-api-key.md"),
 			mcp.WithArray("actions", mcp.Description("List of actions the key can perform, for example: [\"documents.add\", \"documents.delete\"]"),
 				mcp.Required(),
 				mcp.Items(map[string]interface{}{
-					"type":     "array",
-					"minItems": 1,
-					"items": map[string]any{
-						"type": "string",
-					},
+					"type": "string",
 				}),
 			),
 			mcp.WithArray("indexes",
 				mcp.Description("List of indexes the key can access, for example: [\"index1\", \"index2\"]"),
 				mcp.Required(),
 				mcp.Items(map[string]interface{}{
-					"type":     "array",
-					"minItems": 1,
-					"items": map[string]any{
-						"type": "string",
-					},
+					"type": "string",
 				}),
 			),
 			mcp.WithString("expire_at",
-				mcp.Description("Date and time when the key will expire, represented in RFC 3339 format. null if the key never expires"),
-				mcp.Required(),
+				mcp.Description("Date and time when the key will expire, represented in RFC 3339 format. Use 'null' or omit if the key never expires"),
 			),
 			mcp.WithString("name",
 				mcp.Description("Name of the key (Optional)")),
@@ -155,17 +132,13 @@ func (p *Protocol) CreateKey() (tool mcp.Tool, handler server.ToolHandlerFunc) {
 				return mcp.NewToolResultError("indexes is required (min:1)"), nil
 			}
 
-			expireAt, err := RequiredParam[string](req, "expire_at")
+			expireAt, err := OptionalParam[string](req, "expire_at")
 			if err != nil {
 				return mcp.NewToolResultError(err.Error()), nil
 			}
 
 			var expireAtTime time.Time
-			if expireAt != "null" {
-				if err = p.validate(expireAt, "required"); err != nil {
-					return mcp.NewToolResultError(err.Error()), nil
-				}
-
+			if expireAt != "" && expireAt != "null" {
 				if expireAtTime, err = time.Parse(time.RFC3339, expireAt); err != nil {
 					return mcp.NewToolResultError("expire_at must be in RFC3339 format (e.g., 2042-04-02T00:42:42Z)"), nil
 				}
@@ -206,6 +179,79 @@ func (p *Protocol) CreateKey() (tool mcp.Tool, handler server.ToolHandlerFunc) {
 			}
 
 			b, err := sonic.Marshal(resp)
+			if err != nil {
+				return nil, err
+			}
+			return mcp.NewToolResultText(string(b)), nil
+		}
+}
+
+func (p *Protocol) UpdateKey() (tool mcp.Tool, handler server.ToolHandlerFunc) {
+	return mcp.NewTool("update_key",
+			mcp.WithDescription("Update an existing API key. Reference: https://www.meilisearch.com/docs/reference/api/keys/update-api-key.md"),
+			mcp.WithString("key_or_uid", mcp.Description("API key string or UID of the key to update"), mcp.Required()),
+			mcp.WithString("name", mcp.Description("New name of the key (Optional)")),
+			mcp.WithString("description", mcp.Description("New description of the key (Optional)")),
+		), func(ctx context.Context, req mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+			keyOrUID, err := RequiredParam[string](req, "key_or_uid")
+			if err != nil {
+				return mcp.NewToolResultError(err.Error()), nil
+			}
+
+			name, err := OptionalParam[string](req, "name")
+			if err != nil {
+				return mcp.NewToolResultError(err.Error()), nil
+			}
+
+			description, err := OptionalParam[string](req, "description")
+			if err != nil {
+				return mcp.NewToolResultError(err.Error()), nil
+			}
+
+			client, err := p.client(req.Header)
+			if err != nil {
+				return mcp.NewToolResultError(err.Error()), nil
+			}
+
+			keyUpdate := &meilisearch.Key{
+				Name:        name,
+				Description: description,
+			}
+
+			resp, err := client.UpdateKeyWithContext(ctx, keyOrUID, keyUpdate)
+			if err != nil {
+				return mcp.NewToolResultError(err.Error()), nil
+			}
+
+			b, err := sonic.Marshal(resp)
+			if err != nil {
+				return nil, err
+			}
+			return mcp.NewToolResultText(string(b)), nil
+		}
+}
+
+func (p *Protocol) DeleteKey() (tool mcp.Tool, handler server.ToolHandlerFunc) {
+	return mcp.NewTool("delete_key",
+			mcp.WithDescription("Delete an API key. Reference: https://www.meilisearch.com/docs/reference/api/keys/delete-api-key.md"),
+			mcp.WithString("key_or_uid", mcp.Description("API key string or UID of the key to delete"), mcp.Required()),
+		), func(ctx context.Context, req mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+			keyOrUID, err := RequiredParam[string](req, "key_or_uid")
+			if err != nil {
+				return mcp.NewToolResultError(err.Error()), nil
+			}
+
+			client, err := p.client(req.Header)
+			if err != nil {
+				return mcp.NewToolResultError(err.Error()), nil
+			}
+
+			success, err := client.DeleteKeyWithContext(ctx, keyOrUID)
+			if err != nil {
+				return mcp.NewToolResultError(err.Error()), nil
+			}
+
+			b, err := sonic.Marshal(map[string]bool{"success": success})
 			if err != nil {
 				return nil, err
 			}

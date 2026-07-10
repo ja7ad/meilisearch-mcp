@@ -12,7 +12,7 @@ import (
 func (p *Protocol) CreateIndex() (tool mcp.Tool, handler server.ToolHandlerFunc) {
 	return mcp.NewTool(
 			"create_index",
-			mcp.WithDescription("Create a new index in Meilisearch"),
+			mcp.WithDescription("Create a new index in Meilisearch. Reference: https://www.meilisearch.com/docs/reference/api/indexes/create-index.md"),
 			mcp.WithString("index_name",
 				mcp.Description("Name of the index to create"),
 				mcp.Required(),
@@ -62,12 +62,13 @@ func (p *Protocol) CreateIndex() (tool mcp.Tool, handler server.ToolHandlerFunc)
 func (p *Protocol) UpdateIndex() (tool mcp.Tool, handler server.ToolHandlerFunc) {
 	return mcp.NewTool(
 			"update_index",
-			mcp.WithDescription("Update an primary key of index in Meilisearch"),
+			mcp.WithDescription("Update an primary key or UID of index in Meilisearch. Reference: https://www.meilisearch.com/docs/reference/api/indexes/update-index.md"),
 			mcp.WithString("index_name",
-				mcp.Description("Name of the index for delete"),
+				mcp.Description("Name of the index to update"),
 				mcp.Required(),
 			),
-			mcp.WithString("primary_key", mcp.Description("Primary key for the index"), mcp.Required()),
+			mcp.WithString("primary_key", mcp.Description("Primary key for the index (optional)")),
+			mcp.WithString("new_uid", mcp.Description("New UID for the index (optional)")),
 		), func(ctx context.Context, req mcp.CallToolRequest) (*mcp.CallToolResult, error) {
 			uid, err := RequiredParam[string](req, "index_name")
 			if err != nil {
@@ -79,12 +80,25 @@ func (p *Protocol) UpdateIndex() (tool mcp.Tool, handler server.ToolHandlerFunc)
 				return mcp.NewToolResultError(err.Error()), nil
 			}
 
+			newUID, err := OptionalParam[string](req, "new_uid")
+			if err != nil {
+				return mcp.NewToolResultError(err.Error()), nil
+			}
+
 			if err := p.validate(uid, "max=250,min=1"); err != nil {
 				return mcp.NewToolResultError(err.Error()), nil
 			}
 
-			if err := p.validate(primaryKey, "max=250,min=1"); err != nil {
-				return mcp.NewToolResultError(err.Error()), nil
+			if primaryKey != "" {
+				if err := p.validate(primaryKey, "max=250,min=1"); err != nil {
+					return mcp.NewToolResultError(err.Error()), nil
+				}
+			}
+
+			if newUID != "" {
+				if err := p.validate(newUID, "max=250,min=1"); err != nil {
+					return mcp.NewToolResultError(err.Error()), nil
+				}
 			}
 
 			client, err := p.client(req.Header)
@@ -93,7 +107,10 @@ func (p *Protocol) UpdateIndex() (tool mcp.Tool, handler server.ToolHandlerFunc)
 			}
 
 			idx := client.Index(uid)
-			task, err := idx.UpdateIndex(primaryKey)
+			task, err := idx.UpdateIndex(&meilisearch.UpdateIndexRequestParams{
+				PrimaryKey: primaryKey,
+				UID:        newUID,
+			})
 			if err != nil {
 				return mcp.NewToolResultError(err.Error()), nil
 			}
@@ -110,7 +127,7 @@ func (p *Protocol) UpdateIndex() (tool mcp.Tool, handler server.ToolHandlerFunc)
 func (p *Protocol) DeleteIndex() (tool mcp.Tool, handler server.ToolHandlerFunc) {
 	return mcp.NewTool(
 			"delete_index",
-			mcp.WithDescription("Delete an index in Meilisearch"),
+			mcp.WithDescription("Delete an index in Meilisearch. Reference: https://www.meilisearch.com/docs/reference/api/indexes/delete-index.md"),
 			mcp.WithString("index_name",
 				mcp.Description("Name of the index for delete"),
 				mcp.Required(),
@@ -143,7 +160,7 @@ func (p *Protocol) DeleteIndex() (tool mcp.Tool, handler server.ToolHandlerFunc)
 func (p *Protocol) GetIndex() (tool mcp.Tool, handler server.ToolHandlerFunc) {
 	return mcp.NewTool(
 			"get_index",
-			mcp.WithDescription("Get an index by its name"),
+			mcp.WithDescription("Get an index by its name. Reference: https://www.meilisearch.com/docs/reference/api/indexes/get-index.md"),
 			mcp.WithString(
 				"index_name",
 				mcp.Description("Name of the index to retrieve"),
@@ -181,7 +198,7 @@ func (p *Protocol) GetIndex() (tool mcp.Tool, handler server.ToolHandlerFunc) {
 func (p *Protocol) ListIndex() (tool mcp.Tool, handler server.ToolHandlerFunc) {
 	return mcp.NewTool(
 			"list_indexes",
-			mcp.WithDescription("List all indexes in Meilisearch"),
+			mcp.WithDescription("List all indexes in Meilisearch. Reference: https://www.meilisearch.com/docs/reference/api/indexes/list-indexes.md"),
 			WithPagination(),
 		), func(ctx context.Context, req mcp.CallToolRequest) (*mcp.CallToolResult, error) {
 			limit, err := OptionalInt64Param(req, "limit")
@@ -226,7 +243,7 @@ func (p *Protocol) ListIndex() (tool mcp.Tool, handler server.ToolHandlerFunc) {
 
 func (p *Protocol) SwapIndex() (tool mcp.Tool, handler server.ToolHandlerFunc) {
 	return mcp.NewTool("swap_index",
-			mcp.WithDescription("Swap two indexes in Meilisearch"),
+			mcp.WithDescription("Swap two indexes in Meilisearch. Reference: https://www.meilisearch.com/docs/reference/api/indexes/swap-indexes.md"),
 			mcp.WithArray("indexes",
 				mcp.Required(),
 				mcp.Description("Indexes to swap"),
