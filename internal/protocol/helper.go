@@ -27,10 +27,6 @@ func RequiredParam[T comparable](r mcp.CallToolRequest, p string) (T, error) {
 		return zero, fmt.Errorf("parameter %s is not of type %T", p, zero)
 	}
 
-	if val == zero {
-		return zero, fmt.Errorf("missing required parameter: %s", p)
-	}
-
 	return val, nil
 }
 
