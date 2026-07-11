@@ -7,7 +7,7 @@
 <meta name="description" content="Meilisearch MCP (Model Context Protocol) HTTP transport landing page" />
 <link rel="icon" href="https://www.meilisearch.com/favicon.ico" />
 <style>
-:root { --bg:#ffffff; --fg:#1b1f23; --accent:#0047ff; --accent-glow:#8ab4ff; --border:#e2e8f0; --muted:#566170; --code-bg:#f5f7fa; --radius:12px; --brand:#ff5caa; --brand2:#7b16ff; }
+:root { --bg:#ffffff; --fg:#1b1f23; --accent:#ff5caa; --accent-glow:#ffe6f2; --border:#e2e8f0; --muted:#566170; --code-bg:#f5f7fa; --radius:12px; --brand:#ff5caa; --brand2:#7b16ff; }
 html,body { margin:0; padding:0; font-family: system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,'Fira Sans','Droid Sans','Helvetica Neue',Arial,sans-serif; background:var(--bg); color:var(--fg); -webkit-font-smoothing: antialiased; }
 body { line-height:1.55; }
 a { color:var(--accent); text-decoration:none; }
@@ -32,7 +32,7 @@ button:hover,.btn:hover { background:var(--accent); color:#fff; border-color:var
 .toggle { position:fixed; top:.9rem; right:.9rem; z-index:10; }
 .github-link { position:fixed; top:.9rem; right:4.4rem; z-index:15; display:inline-flex; align-items:center; justify-content:center; width:34px; height:34px; border:1px solid var(--border); border-radius:10px; background:var(--code-bg); color:var(--fg); }
 .github-link:hover { background:var(--accent); color:#fff; border-color:var(--accent); text-decoration:none; }
-:root.dark { --bg:#0b0d11; --fg:#f5f7fa; --accent:#5b8dff; --accent-glow:#b1cfff; --border:#242a33; --muted:#9aa7ba; --code-bg:#151a21; }
+:root.dark { --bg:#0b0d11; --fg:#f5f7fa; --accent:#ff7db7; --accent-glow:#5c1d3f; --border:#242a33; --muted:#9aa7ba; --code-bg:#151a21; }
 .dark pre,.dark code { box-shadow:0 2px 4px -2px rgba(0,0,0,.6); }
 .fade-in { animation:fade .7s ease; }
 @keyframes fade { from { opacity:0; transform:translateY(4px);} to { opacity:1; transform:translateY(0);} }
@@ -134,6 +134,42 @@ button:hover,.btn:hover { background:var(--accent); color:#fff; border-color:var
   color: var(--accent);
   font-weight: 600;
 }
+
+/* Sub-tab styles */
+.sub-tab-bar {
+  display: flex;
+  background: rgba(0, 0, 0, 0.015);
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 1rem;
+  gap: 0.5rem;
+}
+.sub-tab-btn {
+  border: none;
+  background: none;
+  padding: 0.6rem 1rem;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--muted);
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+.sub-tab-btn:hover {
+  color: var(--fg);
+  border-bottom-color: var(--border);
+}
+.sub-tab-btn.active {
+  color: var(--accent);
+  border-bottom-color: var(--accent);
+}
+.sub-tab-content {
+  display: none;
+  animation: fadeIn 0.2s ease;
+}
+.sub-tab-content.active {
+  display: block;
+}
 </style>
 <script>
 const toggleTheme = () => { const root=document.documentElement; if(root.classList.contains('dark')){ root.classList.remove('dark'); localStorage.setItem('prefers-dark','0'); } else { root.classList.add('dark'); localStorage.setItem('prefers-dark','1'); }};
@@ -148,6 +184,13 @@ function switchTab(evt, tabId) {
   container.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
   container.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
   document.getElementById(tabId).classList.add('active');
+  evt.currentTarget.classList.add('active');
+}
+function switchSubTab(evt, subTabId) {
+  const content = evt.currentTarget.closest('.tab-content');
+  content.querySelectorAll('.sub-tab-content').forEach(c => c.classList.remove('active'));
+  content.querySelectorAll('.sub-tab-btn').forEach(b => b.classList.remove('active'));
+  content.querySelector('#' + subTabId).classList.add('active');
   evt.currentTarget.classList.add('active');
 }
 </script>
@@ -180,7 +223,7 @@ function switchTab(evt, tabId) {
 <main>
   <section>
     <h2>Supported Clients & Configuration</h2>
-    <p>Select your client from the tabs below to view the specific Model Context Protocol (MCP) configuration required to connect Meilisearch tools, resources, and prompts:</p>
+    <p>Select your client and preferred transport type from the tabs below to view the specific Model Context Protocol (MCP) configuration required to connect Meilisearch tools, resources, and prompts:</p>
     
     <div class="tab-container">
       <div class="tab-bar">
@@ -194,8 +237,32 @@ function switchTab(evt, tabId) {
 
       <!-- Claude Desktop -->
       <div id="tab-claude" class="tab-content active">
-        <div class="client-info">Add this configuration to your <code>~/Library/Application Support/Claude/claude_desktop_config.json</code> (macOS) or <code>%APPDATA%/Claude/claude_desktop_config.json</code> (Windows) to connect using the <strong>stdio</strong> transport:</div>
-        <pre><code>{
+        <div class="sub-tab-bar">
+          <button class="sub-tab-btn active" onclick="switchSubTab(event, 'claude-remote')">HTTP Remote</button>
+          <button class="sub-tab-btn" onclick="switchSubTab(event, 'claude-stdio')">Stdio</button>
+        </div>
+        <div id="claude-remote" class="sub-tab-content active">
+          <div class="client-info">Connect Claude Desktop to a remote MCP server via the <code>mcp-remote</code> proxy:</div>
+          <pre><code>{
+  "mcpServers": {
+    "meilisearch-remote": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "mcp-remote@latest",
+        "{{ .MCPURL }}",
+        "--header",
+        "X-Meili-Instance: http://localhost:7700",
+        "--header",
+        "X-Meili-APIKey: masterKey"
+      ]
+    }
+  }
+}</code></pre>
+        </div>
+        <div id="claude-stdio" class="sub-tab-content">
+          <div class="client-info">Run Meilisearch MCP locally using stdio transport:</div>
+          <pre><code>{
   "mcpServers": {
     "meilisearch": {
       "command": "/usr/bin/meilisearch-mcp",
@@ -210,24 +277,28 @@ function switchTab(evt, tabId) {
     }
   }
 }</code></pre>
+        </div>
       </div>
 
       <!-- Gemini -->
       <div id="tab-gemini" class="tab-content">
-        <div class="client-info">Configure your Gemini Code Assist / Google Cloud MCP server list with the remote HTTP URL:</div>
-        <pre><code>{
+        <div class="sub-tab-bar">
+          <button class="sub-tab-btn active" onclick="switchSubTab(event, 'gemini-remote')">HTTP Remote</button>
+          <button class="sub-tab-btn" onclick="switchSubTab(event, 'gemini-stdio')">Stdio</button>
+        </div>
+        <div id="gemini-remote" class="sub-tab-content active">
+          <div class="client-info">Register the HTTP endpoint URL directly in your Gemini / Google Cloud MCP server list:</div>
+          <pre><code>{
   "mcpServers": {
     "meilisearch": {
       "url": "{{ .MCPURL }}"
     }
   }
 }</code></pre>
-      </div>
-
-      <!-- Antigravity -->
-      <div id="tab-antigravity" class="tab-content">
-        <div class="client-info">Add this to your Antigravity <code>mcp.json</code> or inline configuration block to enable Meilisearch tools:</div>
-        <pre><code>{
+        </div>
+        <div id="gemini-stdio" class="sub-tab-content">
+          <div class="client-info">Run Meilisearch MCP locally as a stdio server:</div>
+          <pre><code>{
   "mcpServers": {
     "meilisearch": {
       "command": "/usr/bin/meilisearch-mcp",
@@ -242,12 +313,18 @@ function switchTab(evt, tabId) {
     }
   }
 }</code></pre>
+        </div>
       </div>
 
-      <!-- LM Studio -->
-      <div id="tab-lm-studio" class="tab-content">
-        <div class="client-info">Add this to your LM Studio <code>mcp.json</code> to connect via <strong>HTTP SSE transport</strong> without needing a local process:</div>
-        <pre><code>{
+      <!-- Antigravity -->
+      <div id="tab-antigravity" class="tab-content">
+        <div class="sub-tab-bar">
+          <button class="sub-tab-btn active" onclick="switchSubTab(event, 'antigravity-remote')">HTTP Remote</button>
+          <button class="sub-tab-btn" onclick="switchSubTab(event, 'antigravity-stdio')">Stdio</button>
+        </div>
+        <div id="antigravity-remote" class="sub-tab-content active">
+          <div class="client-info">Add this to your Antigravity <code>mcp.json</code> to connect remotely:</div>
+          <pre><code>{
   "mcpServers": {
     "meilisearch-http": {
       "url": "{{ .MCPURL }}",
@@ -258,12 +335,76 @@ function switchTab(evt, tabId) {
     }
   }
 }</code></pre>
+        </div>
+        <div id="antigravity-stdio" class="sub-tab-content">
+          <div class="client-info">Run Meilisearch MCP locally inside Antigravity:</div>
+          <pre><code>{
+  "mcpServers": {
+    "meilisearch": {
+      "command": "/usr/bin/meilisearch-mcp",
+      "args": [
+        "serve",
+        "stdio",
+        "--meili-host",
+        "http://localhost:7700",
+        "--meili-api-key",
+        "masterKey"
+      ]
+    }
+  }
+}</code></pre>
+        </div>
+      </div>
+
+      <!-- LM Studio -->
+      <div id="tab-lm-studio" class="tab-content">
+        <div class="sub-tab-bar">
+          <button class="sub-tab-btn active" onclick="switchSubTab(event, 'lm-remote')">HTTP Remote</button>
+          <button class="sub-tab-btn" onclick="switchSubTab(event, 'lm-stdio')">Stdio</button>
+        </div>
+        <div id="lm-remote" class="sub-tab-content active">
+          <div class="client-info">Add this to your LM Studio <code>mcp.json</code> to connect directly to the remote SSE transport:</div>
+          <pre><code>{
+  "mcpServers": {
+    "meilisearch-http": {
+      "url": "{{ .MCPURL }}",
+      "headers": {
+        "X-Meili-Instance": "http://localhost:7700",
+        "X-Meili-APIKey": "masterKey"
+      }
+    }
+  }
+}</code></pre>
+        </div>
+        <div id="lm-stdio" class="sub-tab-content">
+          <div class="client-info">Run Meilisearch MCP locally as a stdio server in LM Studio:</div>
+          <pre><code>{
+  "mcpServers": {
+    "meilisearch-local": {
+      "command": "/usr/bin/meilisearch-mcp",
+      "args": [
+        "serve",
+        "stdio",
+        "--meili-host",
+        "http://localhost:7700",
+        "--meili-api-key",
+        "masterKey"
+      ]
+    }
+  }
+}</code></pre>
+        </div>
       </div>
 
       <!-- Jan -->
       <div id="tab-jan" class="tab-content">
-        <div class="client-info">Enable the Meilisearch integration in Jan Desktop by adding the remote HTTP endpoint to your MCP configuration:</div>
-        <pre><code>{
+        <div class="sub-tab-bar">
+          <button class="sub-tab-btn active" onclick="switchSubTab(event, 'jan-remote')">HTTP Remote</button>
+          <button class="sub-tab-btn" onclick="switchSubTab(event, 'jan-stdio')">Stdio</button>
+        </div>
+        <div id="jan-remote" class="sub-tab-content active">
+          <div class="client-info">Enable the Meilisearch integration in Jan Desktop by adding the remote HTTP endpoint:</div>
+          <pre><code>{
   "mcpServers": {
     "meilisearch": {
       "url": "{{ .MCPURL }}",
@@ -274,14 +415,50 @@ function switchTab(evt, tabId) {
     }
   }
 }</code></pre>
+        </div>
+        <div id="jan-stdio" class="sub-tab-content">
+          <div class="client-info">Run Meilisearch MCP locally as a stdio server in Jan:</div>
+          <pre><code>{
+  "mcpServers": {
+    "meilisearch-local": {
+      "command": "/usr/bin/meilisearch-mcp",
+      "args": [
+        "serve",
+        "stdio",
+        "--meili-host",
+        "http://localhost:7700",
+        "--meili-api-key",
+        "masterKey"
+      ]
+    }
+  }
+}</code></pre>
+        </div>
       </div>
 
       <!-- Cursor -->
       <div id="tab-cursor" class="tab-content">
-        <div class="client-info">In Cursor settings (<strong>Cursor Settings > Features > MCP</strong>), add a new MCP server. Choose <code>command</code> type and configure as follows:</div>
-        <pre><code>Name: meilisearch
+        <div class="sub-tab-bar">
+          <button class="sub-tab-btn active" onclick="switchSubTab(event, 'cursor-remote')">HTTP Remote</button>
+          <button class="sub-tab-btn" onclick="switchSubTab(event, 'cursor-stdio')">Stdio</button>
+        </div>
+        <div id="cursor-remote" class="sub-tab-content active">
+          <div class="client-info">In Cursor settings (<strong>Cursor Settings > Features > MCP</strong>), add a new MCP server. Choose <code>SSE</code> type:</div>
+          <pre><code>Name: meilisearch
+Type: SSE
+URL: {{ .MCPURL }}
+Headers (JSON):
+{
+  "X-Meili-Instance": "http://localhost:7700",
+  "X-Meili-APIKey": "masterKey"
+}</code></pre>
+        </div>
+        <div id="cursor-stdio" class="sub-tab-content">
+          <div class="client-info">In Cursor settings (<strong>Cursor Settings > Features > MCP</strong>), add a new MCP server. Choose <code>command</code> type:</div>
+          <pre><code>Name: meilisearch
 Type: command
 Command: /usr/bin/meilisearch-mcp serve stdio --meili-host http://localhost:7700 --meili-api-key masterKey</code></pre>
+        </div>
       </div>
     </div>
   </section>
