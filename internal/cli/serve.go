@@ -2,6 +2,7 @@ package cli
 
 import (
 	"errors"
+	"os"
 	"os/signal"
 	"syscall"
 	"time"
@@ -35,9 +36,13 @@ func (c *CLI) http(serve *cobra.Command, debug bool) {
 		Long:  "Start the HTTP MCP server to handle requests for Meilisearch.",
 	}
 
-	host := cmd.Flags().String("meili-host", "http://localhost:7700",
+	defaultHost := os.Getenv("MEILI_HOST")
+	if defaultHost == "" {
+		defaultHost = "http://localhost:7700"
+	}
+	host := cmd.Flags().String("meili-host", defaultHost,
 		"Meilisearch host (e.g. http://127.0.0.1:7700)")
-	apiKey := cmd.Flags().String("meili-api-key", "", "Meilisearch API key (optional)")
+	apiKey := cmd.Flags().String("meili-api-key", os.Getenv("MEILI_API_KEY"), "Meilisearch API key (optional)")
 	poolSize := cmd.Flags().Int("pool-size", 100, "Size of the connection pool for HTTP transport")
 	poolDuration := cmd.Flags().Duration("pool-duration", 5*time.Minute,
 		"Duration for which connections are kept in the pool (e.g. 30s, 5m)")
@@ -103,9 +108,13 @@ func (c *CLI) stdio(serve *cobra.Command, debug bool) {
 		Long:  "Start the Stdio MCP server to handle requests for Meilisearch.",
 	}
 
-	host := cmd.Flags().String("meili-host", "http://localhost:7700",
+	defaultHost := os.Getenv("MEILI_HOST")
+	if defaultHost == "" {
+		defaultHost = "http://localhost:7700"
+	}
+	host := cmd.Flags().String("meili-host", defaultHost,
 		"Meilisearch host (e.g. http://127.0.0.1:7700)")
-	apiKey := cmd.Flags().String("meili-api-key", "", "Meilisearch API key (optional)")
+	apiKey := cmd.Flags().String("meili-api-key", os.Getenv("MEILI_API_KEY"), "Meilisearch API key (optional)")
 
 	serve.AddCommand(cmd)
 

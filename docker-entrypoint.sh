@@ -22,8 +22,12 @@ if [ -n "${MEILI_API_KEY}" ]; then
 fi
 
 # If user passes explicit command (e.g. `bash`), run that instead
-if [ "${1:-}" = "sh" ] || [ "${1:-}" = "bash" ] || [ "${1:-}" = "meilisearch-mcp" ]; then
-  exec "$@"
+if [ "${1:-}" = "sh" ] || [ "${1:-}" = "bash" ] || [ "${1:-}" = "meilisearch-mcp" ] || [ "${1:-}" = "serve" ]; then
+  if [ "${1:-}" = "serve" ]; then
+    exec /app/meilisearch-mcp ${DEBUG_FLAG} "$@"
+  else
+    exec "$@"
+  fi
 fi
 
 exec /app/meilisearch-mcp ${DEBUG_FLAG} ${CMD_ARGS} "$@"
