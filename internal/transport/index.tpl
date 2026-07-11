@@ -65,6 +65,75 @@ button:hover,.btn:hover { background:var(--accent); color:#fff; border-color:var
 .dark .config-card { box-shadow:0 2px 4px -2px rgba(0,0,0,.6); }
 .config-card h3 { margin-top:0; }
 .config-card pre { margin:0.75rem 0 0; }
+
+/* Tabbed config interface styles */
+.tab-container {
+  margin: 1.6rem 0 2.2rem;
+  background: var(--code-bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+}
+.dark .tab-container {
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.35);
+}
+.tab-bar {
+  display: flex;
+  overflow-x: auto;
+  background: rgba(0, 0, 0, 0.03);
+  border-bottom: 1px solid var(--border);
+  scrollbar-width: none;
+}
+.tab-bar::-webkit-scrollbar {
+  display: none;
+}
+.tab-btn {
+  border: none;
+  background: none;
+  padding: 0.9rem 1.4rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--muted);
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  border-radius: 0;
+}
+.tab-btn:hover {
+  background: none;
+  color: var(--fg);
+  border-bottom-color: var(--border);
+}
+.tab-btn.active {
+  color: var(--accent);
+  border-bottom-color: var(--accent);
+  background: var(--bg);
+}
+.tab-content {
+  display: none;
+  padding: 1.4rem;
+  animation: fadeIn 0.25s ease;
+}
+.tab-content.active {
+  display: block;
+}
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(2px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.client-info {
+  font-size: 0.82rem;
+  color: var(--muted);
+  margin-bottom: 1rem;
+}
+.client-info code {
+  color: var(--accent);
+  font-weight: 600;
+}
 </style>
 <script>
 const toggleTheme = () => { const root=document.documentElement; if(root.classList.contains('dark')){ root.classList.remove('dark'); localStorage.setItem('prefers-dark','0'); } else { root.classList.add('dark'); localStorage.setItem('prefers-dark','1'); }};
@@ -74,6 +143,13 @@ function copyURL(){ const inp=document.getElementById('mcp-url'); inp.select(); 
 function flashButton(btn){ if(!btn) return; btn.classList.add('copied'); const orig=btn.dataset.label||btn.textContent; const span=btn.querySelector('span'); if(span){ span.textContent='Copied'; } else { btn.textContent='Copied'; } setTimeout(()=>{ if(span){ span.textContent=orig; } else { btn.textContent=orig; } btn.classList.remove('copied'); },1400); }
 function enhanceCodeBlocks(){ document.querySelectorAll('pre code').forEach(code=>{ const wrapper=document.createElement('div'); wrapper.className='code-wrap'; const pre=code.parentElement; pre.parentElement.insertBefore(wrapper,pre); wrapper.appendChild(pre); const raw=code.textContent.trim(); const highlighted=highlightJSONLike(raw); code.innerHTML=highlighted; code.classList.add('hl'); const btn=document.createElement('button'); btn.type='button'; btn.className='copy-btn'; btn.dataset.label='Copy'; btn.innerHTML='<svg fill="none" stroke-width="1.6" stroke="currentColor" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg><span>Copy</span>'; btn.addEventListener('click',()=>{ try { navigator.clipboard.writeText(raw);} catch(e){} flashButton(btn); }); wrapper.appendChild(btn); }); }
 function highlightJSONLike(src){ try { const obj=JSON.parse(src); let json=JSON.stringify(obj, null, 2); json=json.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); const keyStore=[]; json=json.replace(/("(?:\\"|[^"\\])*?")(?=:\s)/g,function(m){ var i=keyStore.length; keyStore.push(m); return '@@K'+i+'@@'; }); json=json.replace(/"(?:\\"|[^"\\])*?"/g,function(m){ return '<span class="tok-str">'+m+'</span>'; }); json=json.replace(/\b-?(?:0|[1-9]\d*)(?:\.\d+)?(?:[eE][+-]?\d+)?\b/g,function(m){ return '<span class="tok-num">'+m+'</span>'; }); json=json.replace(/\b(true|false)\b/g,function(m){ return '<span class="tok-bool">'+m+'</span>'; }); json=json.replace(/\bnull\b/g,'<span class="tok-null">null</span>'); json=json.replace(/[{}\[\],]/g,function(m){ return '<span class="tok-sym">'+m+'</span>'; }); keyStore.forEach(function(k,i){ var escaped=k.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); json=json.replace('@@K'+i+'@@','<span class="tok-key">'+escaped+'</span>'); }); return json; } catch(e) { return src.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); } }
+function switchTab(evt, tabId) {
+  const container = evt.currentTarget.closest('.tab-container');
+  container.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+  container.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById(tabId).classList.add('active');
+  evt.currentTarget.classList.add('active');
+}
 </script>
 </head>
 <body class="fade-in">
@@ -104,35 +180,110 @@ function highlightJSONLike(src){ try { const obj=JSON.parse(src); let json=JSON.
 <main>
   <section>
     <h2>Supported Clients & Configuration</h2>
-    <p>Below are example configurations & notes for MCP-capable clients (install / enable as applicable):</p>
-    <ul class="small" style="list-style:disc; padding-left:1.2rem;">
-      <li><strong>Jan</strong> (desktop) – native MCP provider config.</li>
-      <li><strong>Claude Desktop</strong> – add via tool integration (future MCP support).</li>
-      <li><strong>Cursor / VS Code (Continue)</strong> – configure remote/stdio MCP backend.</li>
-      <li><strong>Zed / JetBrains (plugins)</strong> – emerging MCP adopters.</li>
-      <li><strong>Custom</strong> – use <code>mcp-remote</code> CLI or direct HTTP POST.</li>
-    </ul>
-    <div class="config-grid">
-      <div class="config-card">
-        <h3 style="margin-top:0;">Generic HTTP (mcp-remote)</h3>
+    <p>Select your client from the tabs below to view the specific Model Context Protocol (MCP) configuration required to connect Meilisearch tools, resources, and prompts:</p>
+    
+    <div class="tab-container">
+      <div class="tab-bar">
+        <button class="tab-btn active" onclick="switchTab(event, 'tab-claude')">Claude Desktop</button>
+        <button class="tab-btn" onclick="switchTab(event, 'tab-gemini')">Gemini</button>
+        <button class="tab-btn" onclick="switchTab(event, 'tab-antigravity')">Antigravity</button>
+        <button class="tab-btn" onclick="switchTab(event, 'tab-lm-studio')">LM Studio</button>
+        <button class="tab-btn" onclick="switchTab(event, 'tab-jan')">Jan</button>
+        <button class="tab-btn" onclick="switchTab(event, 'tab-cursor')">Cursor</button>
+      </div>
+
+      <!-- Claude Desktop -->
+      <div id="tab-claude" class="tab-content active">
+        <div class="client-info">Add this configuration to your <code>~/Library/Application Support/Claude/claude_desktop_config.json</code> (macOS) or <code>%APPDATA%/Claude/claude_desktop_config.json</code> (Windows) to connect using the <strong>stdio</strong> transport:</div>
         <pre><code>{
-  "command": "npx",
-  "args": ["-y","mcp-remote@latest","{{ .MCPURL }}", "--header","X-Meili-Instance: ${MEILISEARCH_INSTANCE}", "--header","X-Meili-APIKey: ${MEILISEARCH_API_KEY}"],
-  "env": {"MEILISEARCH_INSTANCE": "http://localhost:7700", "MEILISEARCH_API_KEY": "masterKey"},
-  "active": true
+  "mcpServers": {
+    "meilisearch": {
+      "command": "/usr/bin/meilisearch-mcp",
+      "args": [
+        "serve",
+        "stdio",
+        "--meili-host",
+        "http://localhost:7700",
+        "--meili-api-key",
+        "masterKey"
+      ]
+    }
+  }
 }</code></pre>
       </div>
-      <div class="config-card">
-        <h3 style="margin-top:0;">Local STDIO</h3>
+
+      <!-- Gemini -->
+      <div id="tab-gemini" class="tab-content">
+        <div class="client-info">Configure your Gemini Code Assist / Google Cloud MCP server list with the remote HTTP URL:</div>
         <pre><code>{
-  "command": "/usr/bin/meilisearch-mcp",
-  "args": ["serve", "stdio","--meili-host","http://localhost:7700","--meili-api-key","masterKey"],
-  "env": {},
-  "active": false
+  "mcpServers": {
+    "meilisearch": {
+      "url": "{{ .MCPURL }}"
+    }
+  }
 }</code></pre>
+      </div>
+
+      <!-- Antigravity -->
+      <div id="tab-antigravity" class="tab-content">
+        <div class="client-info">Add this to your Antigravity <code>mcp.json</code> or inline configuration block to enable Meilisearch tools:</div>
+        <pre><code>{
+  "mcpServers": {
+    "meilisearch": {
+      "command": "/usr/bin/meilisearch-mcp",
+      "args": [
+        "serve",
+        "stdio",
+        "--meili-host",
+        "http://localhost:7700",
+        "--meili-api-key",
+        "masterKey"
+      ]
+    }
+  }
+}</code></pre>
+      </div>
+
+      <!-- LM Studio -->
+      <div id="tab-lm-studio" class="tab-content">
+        <div class="client-info">Add this to your LM Studio <code>mcp.json</code> to connect via <strong>HTTP SSE transport</strong> without needing a local process:</div>
+        <pre><code>{
+  "mcpServers": {
+    "meilisearch-http": {
+      "url": "{{ .MCPURL }}",
+      "headers": {
+        "X-Meili-Instance": "http://localhost:7700",
+        "X-Meili-APIKey": "masterKey"
+      }
+    }
+  }
+}</code></pre>
+      </div>
+
+      <!-- Jan -->
+      <div id="tab-jan" class="tab-content">
+        <div class="client-info">Enable the Meilisearch integration in Jan Desktop by adding the remote HTTP endpoint to your MCP configuration:</div>
+        <pre><code>{
+  "mcpServers": {
+    "meilisearch": {
+      "url": "{{ .MCPURL }}",
+      "headers": {
+        "X-Meili-Instance": "http://localhost:7700",
+        "X-Meili-APIKey": "masterKey"
+      }
+    }
+  }
+}</code></pre>
+      </div>
+
+      <!-- Cursor -->
+      <div id="tab-cursor" class="tab-content">
+        <div class="client-info">In Cursor settings (<strong>Cursor Settings > Features > MCP</strong>), add a new MCP server. Choose <code>command</code> type and configure as follows:</div>
+        <pre><code>Name: meilisearch
+Type: command
+Command: /usr/bin/meilisearch-mcp serve stdio --meili-host http://localhost:7700 --meili-api-key masterKey</code></pre>
       </div>
     </div>
-    <p class="small">Flip <code>active</code> flags to select transport. Prefer stdio locally; HTTP for remote/container usage.</p>
   </section>
   <section>
     <h2>Security Notes</h2>
