@@ -5,8 +5,11 @@ import (
 	"encoding/json"
 	"errors"
 	"testing"
+	"time"
 
 	"github.com/bytedance/sonic"
+	"github.com/ja7ad/meilisearch-mcp/internal/pool"
+	"github.com/ja7ad/meilisearch-mcp/internal/util"
 	"github.com/mark3labs/mcp-go/mcp"
 	"github.com/meilisearch/meilisearch-go"
 	"github.com/stretchr/testify/assert"
@@ -387,4 +390,29 @@ func TestMultiSearchPrompt(t *testing.T) {
 	assert.True(t, ok)
 	assert.Contains(t, textContents.Text, "multi_search")
 	assert.Contains(t, textContents.Text, `[{"indexUid":"movies","q":"sci-fi"}]`)
+}
+
+func TestHTTPTransportFallback(t *testing.T) {
+	mockSrv := &mockServiceManager{
+		healthFunc: func(ctx context.Context) (*meilisearch.Health, error) {
+			return &meilisearch.Health{Status: "available"}, nil
+		},
+	}
+
+	p := pool.New(10, 10*time.Minute)
+	proto := New(TransportHTTP, "http://localhost:7700", "key", p)
+
+	// Inject the mock client into pool with the fallback hash to avoid remote connection
+	fallbackHash := util.Hash("http://localhost:7700:key")
+	p.Set(fallbackHash, mockSrv)
+
+	_, handler := proto.GetHealth()
+	req := mcp.CallToolRequest{}
+	req.Params.Name = "get_health"
+
+	// No headers passed, should fallback to default host/key and use the mock client
+	res, err := handler(context.Background(), req)
+	assert.NoError(t, err)
+	assert.False(t, res.IsError)
+	assert.Contains(t, res.Content[0].(mcp.TextContent).Text, "available")
 }

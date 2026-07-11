@@ -53,10 +53,15 @@ func (p *Protocol) client(header http.Header) (meilisearch.ServiceManager, error
 
 		host, apiKey, hash := util.MeilisearchHeaders(header)
 		if host == "" {
-			return nil, ErrMissingHostHeader
+			host = p.host
+			apiKey = p.apiKey
+			if host == "" {
+				return nil, ErrMissingHostHeader
+			}
+			hash = util.Hash(host + ":" + apiKey)
 		}
 
-		p.logging.Debug("Using host from headers", "host", host)
+		p.logging.Debug("Using host for connection", "host", host)
 
 		if cli, ok := p.pool.Get(hash); ok && cli != nil {
 			return cli, nil

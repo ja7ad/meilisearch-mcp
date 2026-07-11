@@ -63,7 +63,8 @@ func (m *RateLimitMiddleware) ToolMiddleware(next server.ToolHandlerFunc) server
 	return func(ctx context.Context, req mcp.CallToolRequest) (*mcp.CallToolResult, error) {
 		host, _, hash := util.MeilisearchHeaders(req.Header)
 		if hash == "" {
-			return nil, fmt.Errorf("missing x-meili-instance in request headers")
+			hash = "default"
+			host = "default"
 		}
 
 		limiter := m.getLimiter(hash)
