@@ -67,8 +67,7 @@ func (p *Protocol) ListChatWorkspaces() (tool mcp.Tool, handler server.ToolHandl
 	return mcp.NewTool(
 			"list_chat_workspaces",
 			mcp.WithDescription("List all chat workspaces configured in Meilisearch. Reference: https://www.meilisearch.com/docs/reference/api.md"),
-			mcp.WithNumber("limit", mcp.Description("Limit the number of workspaces returned")),
-			mcp.WithNumber("offset", mcp.Description("Offset for pagination")),
+			WithPagination(),
 		), func(ctx context.Context, req mcp.CallToolRequest) (*mcp.CallToolResult, error) {
 			limit, err := OptionalInt64Param(req, "limit")
 			if err != nil {
