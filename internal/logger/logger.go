@@ -206,7 +206,7 @@ func isNil(i any) bool {
 	if i == nil {
 		return true
 	}
-	if reflect.TypeOf(i).Kind() == reflect.Ptr {
+	if reflect.TypeOf(i).Kind() == reflect.Pointer {
 		return reflect.ValueOf(i).IsNil()
 	}
 

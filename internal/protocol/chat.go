@@ -43,7 +43,7 @@ func (p *Protocol) ChatCompletion() (tool mcp.Tool, handler server.ToolHandlerFu
 			if err != nil {
 				return mcp.NewToolResultError(err.Error()), nil
 			}
-			defer stream.Close()
+			defer func() { _ = stream.Close() }()
 
 			var fullText string
 			for stream.Next() {

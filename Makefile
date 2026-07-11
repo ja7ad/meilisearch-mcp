@@ -8,8 +8,8 @@ build-docker:
 
 dev-tools:
 	@echo "Installing development tools..."
-	go install github.com/golangci/golangci-lint/v2/cmd/golangci-lint@v2.4.0
-	go install mvdan.cc/gofumpt@latest
+	go tool gofumpt --help >/dev/null
+	go tool golangci-lint --version >/dev/null
 
 tests:
 	@echo "Running unit tests..."
@@ -22,8 +22,8 @@ check-all:
 
 fmt:
 	@echo "formatting code..."
-	gofumpt -l -w .
+	go tool gofumpt -l -w .
 
 check:
 	@echo "linting..."
-	golangci-lint run --timeout=20m0s --tests=false -v
+	go tool golangci-lint run --timeout=20m0s --tests=false -v
