@@ -46,7 +46,20 @@ func NewHTTP(mc *server.MCPServer, addr string) Server {
 			if r.Method == http.MethodHead {
 				return
 			}
-			data := struct{ Version string }{Version: version.Version.String()}
+			scheme := "http"
+			if r.TLS != nil {
+				scheme = "https"
+			} else if proto := r.Header.Get("X-Forwarded-Proto"); proto != "" {
+				scheme = proto
+			}
+
+			data := struct {
+				Version string
+				MCPURL  string
+			}{
+				Version: version.Version.String(),
+				MCPURL:  scheme + "://" + r.Host + "/mcp",
+			}
 
 			var buf bytes.Buffer
 			if err := indexTemplate.Execute(&buf, data); err != nil {

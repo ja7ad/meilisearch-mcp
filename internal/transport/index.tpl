@@ -92,7 +92,7 @@ function highlightJSONLike(src){ try { const obj=JSON.parse(src); let json=JSON.
   <div class="copy-box">
     <h3 style="margin-top:0;">MCP Endpoint URL</h3>
     <div class="copy-row">
-      <input id="mcp-url" value="https://meilisearch.javad.dev/mcp" readonly aria-label="MCP Endpoint URL" />
+      <input id="mcp-url" value="{{ .MCPURL }}" readonly aria-label="MCP Endpoint URL" />
       <button id="url-copy-btn" onclick="copyURL()" data-label="Copy" class="btn" style="padding:.55rem .85rem;">
         <svg fill="none" stroke-width="1.6" stroke="currentColor" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
         <span>Copy</span>
@@ -117,7 +117,7 @@ function highlightJSONLike(src){ try { const obj=JSON.parse(src); let json=JSON.
         <h3 style="margin-top:0;">Generic HTTP (mcp-remote)</h3>
         <pre><code>{
   "command": "npx",
-  "args": ["-y","mcp-remote@latest","https://meilisearch.javad.dev/mcp", "--header","X-Meili-Instance: ${MEILISEARCH_INSTANCE}", "--header","X-Meili-APIKey: ${MEILISEARCH_API_KEY}"],
+  "args": ["-y","mcp-remote@latest","{{ .MCPURL }}", "--header","X-Meili-Instance: ${MEILISEARCH_INSTANCE}", "--header","X-Meili-APIKey: ${MEILISEARCH_API_KEY}"],
   "env": {"MEILISEARCH_INSTANCE": "http://localhost:7700", "MEILISEARCH_API_KEY": "masterKey"},
   "active": true
 }</code></pre>
