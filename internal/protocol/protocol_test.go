@@ -15,14 +15,14 @@ import (
 // Mock ServiceManager implementation
 type mockServiceManager struct {
 	meilisearch.ServiceManager
-	createIndexFunc func(config *meilisearch.IndexConfig) (*meilisearch.TaskInfo, error)
-	getIndexFunc    func(ctx context.Context, uid string) (*meilisearch.IndexResult, error)
-	listIndexesFunc func(ctx context.Context, param *meilisearch.IndexesQuery) (*meilisearch.IndexesResults, error)
-	indexFunc       func(uid string) meilisearch.IndexManager
-	healthFunc      func(ctx context.Context) (*meilisearch.Health, error)
-	versionFunc     func(ctx context.Context) (*meilisearch.Version, error)
-	getStatsFunc    func(ctx context.Context, param *meilisearch.StatsParams) (*meilisearch.Stats, error)
-	getNetworkFunc  func(ctx context.Context) (*meilisearch.Network, error)
+	createIndexFunc  func(config *meilisearch.IndexConfig) (*meilisearch.TaskInfo, error)
+	getIndexFunc     func(ctx context.Context, uid string) (*meilisearch.IndexResult, error)
+	listIndexesFunc  func(ctx context.Context, param *meilisearch.IndexesQuery) (*meilisearch.IndexesResults, error)
+	indexFunc        func(uid string) meilisearch.IndexManager
+	healthFunc       func(ctx context.Context) (*meilisearch.Health, error)
+	versionFunc      func(ctx context.Context) (*meilisearch.Version, error)
+	getStatsFunc     func(ctx context.Context, param *meilisearch.StatsParams) (*meilisearch.Stats, error)
+	getNetworkFunc   func(ctx context.Context) (*meilisearch.Network, error)
 	listWebhooksFunc func(ctx context.Context) (*meilisearch.WebhookResults, error)
 }
 
