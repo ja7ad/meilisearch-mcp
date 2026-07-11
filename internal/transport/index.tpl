@@ -170,6 +170,66 @@ button:hover,.btn:hover { background:var(--accent); color:#fff; border-color:var
 .sub-tab-content.active {
   display: block;
 }
+
+/* Responsive media queries */
+@media (max-width: 768px) {
+  header {
+    padding: 1.5rem 1rem 0.5rem;
+  }
+  main {
+    padding: 0 1rem 3rem;
+  }
+  h1 {
+    font-size: 2.2rem;
+    margin-top: 2rem;
+  }
+  .toggle {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+  }
+  .github-link {
+    position: absolute;
+    top: 1rem;
+    right: 3.8rem;
+  }
+  .tab-btn {
+    padding: 0.8rem 1rem;
+    font-size: 0.75rem;
+  }
+  .sub-tab-btn {
+    padding: 0.5rem 0.8rem;
+    font-size: 0.68rem;
+  }
+  .tab-content {
+    padding: 1rem;
+  }
+  pre {
+    padding-top: 2.4rem; /* push text down below absolute copy button */
+  }
+}
+
+@media (max-width: 480px) {
+  h1 {
+    font-size: 1.8rem;
+  }
+  .btn-row {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  .btn-row button, .btn-row .btn {
+    width: 100%;
+    justify-content: center;
+  }
+  .copy-row {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  .copy-row button {
+    width: 100%;
+    justify-content: center;
+  }
+}
 </style>
 <script>
 const toggleTheme = () => { const root=document.documentElement; if(root.classList.contains('dark')){ root.classList.remove('dark'); localStorage.setItem('prefers-dark','0'); } else { root.classList.add('dark'); localStorage.setItem('prefers-dark','1'); }};
